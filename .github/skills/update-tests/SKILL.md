@@ -9,14 +9,14 @@
 ### 1. Confirm Destructive Action
 Warn the user:
 ```
-⚠️  DESTRUCTIVE ACTION: This will DELETE specs/saucedemo.feature and regenerate all tests
+⚠️  DESTRUCTIVE ACTION: This will DELETE features/saucedemo.feature and regenerate all tests
 
 Current state:
-  specs/saucedemo.feature: 4 scenarios [SL-01 through SL-04]
+  features/saucedemo.feature: 4 scenarios [SL-01 through SL-04]
   tests/saucedemo.spec.ts: 84 lines
 
 Proceeding will:
-  1. Delete specs/saucedemo.feature
+  1. Delete features/saucedemo.feature
   2. Regenerate all test scenarios from scratch
   3. Generate fresh tests/saucedemo.spec.ts
 
@@ -27,13 +27,13 @@ If user declines, STOP. If user confirms, continue.
 
 ### 2. Delete Current Spec File
 ```bash
-rm specs/saucedemo.feature
-# or on Windows: Remove-Item specs/saucedemo.feature -Force
+rm features/saucedemo.feature
+# or on Windows: Remove-Item features/saucedemo.feature -Force
 ```
 
 Verify deletion:
 ```
-✅ Deleted: specs/saucedemo.feature
+✅ Deleted: features/saucedemo.feature
 ```
 
 ### 3. Prompt User for New Spec
@@ -61,7 +61,7 @@ Feature: Sauce Demo E-commerce Application
 ```
 
 ### 4. Create New Spec File
-- Write the provided specification to `specs/saucedemo.feature`
+- Write the provided specification to `features/saucedemo.feature`
 - Validate Gherkin format:
   - Must have Feature description
   - Each scenario has [SL-##] ID
@@ -72,7 +72,7 @@ If format is invalid, ask user to fix and resubmit.
 
 ### 5. Generate Tests from Spec
 Follow the "spec-driven-playwright" skill:
-- Parse all scenarios from fresh `specs/saucedemo.feature`
+- Parse all scenarios from fresh `features/saucedemo.feature`
 - Explore `https://www.saucedemo.com` using playwright-cli
 - Discover all locators and element interactions
 - Generate brand new `tests/saucedemo.spec.ts` with all scenarios
@@ -90,7 +90,7 @@ npm test
 ```
 ✅ Tests regenerated successfully!
 
-Spec file: specs/saucedemo.feature
+Spec file: features/saucedemo.feature
 Test file: tests/saucedemo.spec.ts
 
 Scenarios: [SL-01], [SL-02], ..., [SL-0N]
@@ -118,7 +118,7 @@ npm run update-tests
 npm test
 
 # View updated spec
-cat specs/saucedemo.feature
+cat features/saucedemo.feature
 
 # View updated tests
 cat tests/saucedemo.spec.ts

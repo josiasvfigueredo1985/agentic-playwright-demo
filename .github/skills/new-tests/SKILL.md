@@ -13,7 +13,7 @@
 - Identify the highest scenario ID used
 
 ### 2. Read Current Spec
-- Read `specs/saucedemo.feature`
+- Read `features/saucedemo.feature`
 - List all scenarios and their IDs
 - Identify any gaps between test code and spec
 
@@ -37,14 +37,14 @@ Please describe the new scenario(s) in the following format:
 ```
 
 ### 4. Add to Spec File
-- Append new scenarios to `specs/saucedemo.feature`
+- Append new scenarios to `features/saucedemo.feature`
 - Maintain Gherkin format (Given/When/Then structure)
 - Use sequential scenario IDs ([SL-05], [SL-06], etc.)
 - Preserve existing scenarios
 
 ### 5. Generate Tests from Spec
 Follow the "spec-driven-playwright" skill:
-- Parse all scenarios from `specs/saucedemo.feature` (including new ones)
+- Parse all scenarios from `features/saucedemo.feature` (including new ones)
 - Explore `https://www.saucedemo.com` using playwright-cli
 - Discover locators for new scenarios
 - Generate/update `tests/saucedemo.spec.ts` with all scenarios (old + new)
@@ -72,7 +72,7 @@ Status: 6 passed (25.3s) - Exit Code: 0
 
 ## Success Criteria
 
-- ✅ New scenarios added to `specs/saucedemo.feature`
+- ✅ New scenarios added to `features/saucedemo.feature`
 - ✅ Scenario IDs are sequential and unique
 - ✅ Gherkin format is correct
 - ✅ All tests pass (old + new)

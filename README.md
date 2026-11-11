@@ -27,7 +27,7 @@ Project Structure
 ```
 
 **How it works:**
-1. Agent reads `specs/saucedemo.feature` (Gherkin format)
+1. Agent reads `features/saucedemo.feature` (Gherkin format)
 2. Agent explores `https://www.saucedemo.com` using `playwright-cli`
 3. Agent generates `tests/saucedemo.spec.ts` with discovered locators
 4. Agent runs `npm test` and validates all pass
@@ -77,7 +77,7 @@ npm test -- --grep "login"
 2. Agent reads current spec to understand existing scenarios
 3. Agent asks you: "What new test scenarios would you like to add?"
 4. You provide new scenarios in Gherkin format (e.g., [SL-05], [SL-06])
-5. Agent appends new scenarios to `specs/saucedemo.feature`
+5. Agent appends new scenarios to `features/saucedemo.feature`
 6. Agent explores `https://www.saucedemo.com` to discover locators for NEW scenarios
 7. Agent generates/updates `tests/saucedemo.spec.ts` with all scenarios (old + new)
 8. Agent runs `npm test` to validate all tests pass
@@ -106,12 +106,12 @@ npm run new-tests
 - ❌ If you want to keep existing scenarios → Use `npm run new-tests` instead
 
 **What happens (⚠️ Destructive):**
-1. Agent warns: "⚠️ This will DELETE specs/saucedemo.feature"
+1. Agent warns: "⚠️ This will DELETE features/saucedemo.feature"
 2. Agent asks: "Do you want to continue? (yes/no)"
-3. If you confirm, agent deletes `specs/saucedemo.feature`
+3. If you confirm, agent deletes `features/saucedemo.feature`
 4. Agent asks: "Please provide the complete new specification"
 5. You provide all scenarios in Gherkin format from scratch
-6. Agent creates fresh `specs/saucedemo.feature` with your scenarios
+6. Agent creates fresh `features/saucedemo.feature` with your scenarios
 7. Agent explores `https://www.saucedemo.com` to discover ALL locators
 8. Agent generates brand new `tests/saucedemo.spec.ts` with all scenarios
 9. Agent runs `npm test` to validate all pass
@@ -127,7 +127,7 @@ npm run update-tests
 ## 📖 How to Use
 
 ### View Test Specifications
-Open [specs/saucedemo.feature](specs/saucedemo.feature) to see the 4 BDD scenarios:
+Open [features/saucedemo.feature](features/saucedemo.feature) to see the 4 BDD scenarios:
 - **Scenario 1:** Valid login with standard credentials
 - **Scenario 2:** Locked-out user cannot login
 - **Scenario 3:** Sort products by price
@@ -149,7 +149,7 @@ All tests run against the live Sauce Demo site. Results include:
 
 ## 🔄 How to Regenerate Specs
 
-Use this workflow when the `specs/saucedemo.feature` file is missing or needs to be recreated from scratch.
+Use this workflow when the `features/saucedemo.feature` file is missing or needs to be recreated from scratch.
 
 ### Step 1: Identify Test Scenarios
 
@@ -161,7 +161,7 @@ Explore the application and document key user workflows. For Sauce Demo, identif
 
 ### Step 2: Create Spec File in Gherkin Format
 
-Create `specs/saucedemo.feature` with the following structure:
+Create `features/saucedemo.feature` with the following structure:
 
 ```gherkin
 Feature: Application Name
@@ -244,14 +244,14 @@ Scenario: [SL-04] Complete end-to-end checkout flow
 
 ### Step 4: Save Spec File
 
-Save the file as `specs/saucedemo.feature` (must use `.feature` extension for Gherkin format).
+Save the file as `features/saucedemo.feature` (must use `.feature` extension for Gherkin format).
 
 ### Step 5: Ask Agent to Generate Tests
 
 **Command to invoke the agent:**
 
 ```
-Read the spec file at specs/saucedemo.feature, then:
+Read the spec file at features/saucedemo.feature, then:
 
 1. Explore https://www.saucedemo.com using playwright-cli
    - Identify the login form elements
@@ -279,7 +279,7 @@ Read the spec file at specs/saucedemo.feature, then:
 
 **What the agent will do:**
 
-1. **Parse specs** — Read all 4 scenarios from `specs/saucedemo.feature`
+1. **Parse specs** — Read all 4 scenarios from `features/saucedemo.feature`
 2. **Explore live** — Launch browser, navigate flows, capture selectors
 3. **Discover locators** — Find `data-test` attributes and element paths
 4. **Generate tests** — Create `tests/saucedemo.spec.ts` with embedded selectors
@@ -288,7 +288,7 @@ Read the spec file at specs/saucedemo.feature, then:
 **Example agent input:**
 
 ```
-I've created specs/saucedemo.feature with 4 test scenarios [SL-01 through SL-04].
+I've created features/saucedemo.feature with 4 test scenarios [SL-01 through SL-04].
 Please generate tests/saucedemo.spec.ts by:
 - Reading the spec file
 - Exploring https://www.saucedemo.com
@@ -310,13 +310,13 @@ If tests fail:
 - Regenerates test code
 - Re-runs validation
 
-**Result:** `specs/saucedemo.feature` is now the single source of truth, and `tests/saucedemo.spec.ts` is automatically generated.
+**Result:** `features/saucedemo.feature` is now the single source of truth, and `tests/saucedemo.spec.ts` is automatically generated.
 
 ## ➕ How to Add More Tests
 
 ### 1. Add Scenario to Spec File
 
-Edit [specs/saucedemo.feature](specs/saucedemo.feature) and add a new Gherkin scenario:
+Edit [features/saucedemo.feature](features/saucedemo.feature) and add a new Gherkin scenario:
 
 ```gherkin
 Scenario: Your new test scenario
@@ -333,7 +333,7 @@ Ask the agent to explore the application and generate test code from the new spe
 
 ```bash
 # Agent will:
-# 1. Read the updated specs/saucedemo.feature
+# 1. Read the updated features/saucedemo.feature
 # 2. Explore https://www.saucedemo.com
 # 3. Generate or update tests/saucedemo.spec.ts
 # 4. Run npm test to validate

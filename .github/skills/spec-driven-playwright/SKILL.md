@@ -9,7 +9,7 @@ This workflow enables an agent to dynamically explore, generate, and validate te
 
 ## Process
 
-1. **Read Specs** — Parse `specs/*.spec.md` as the acceptance contract (Given/When/Then scenarios).
+1. **Read Specs** — Parse `features/*.feature` as the acceptance contract (Given/When/Then scenarios).
 
 2. **Explore Live** — Use `playwright-cli` commands to interact with the application and understand the UI:
    - `playwright-cli open https://saucedemo.com` — launch the browser
@@ -41,4 +41,4 @@ Static page objects couple tests to UI structure and prevent the agent from adap
 ## References
 
 - [Playwright CLI skill](../playwright-cli/SKILL.md) — browser automation commands
-- [Sauce Demo spec](../../specs/saucedemo.spec.md) — acceptance criteria
+- [Sauce Demo spec](../../features/saucedemo.feature) — acceptance criteria
