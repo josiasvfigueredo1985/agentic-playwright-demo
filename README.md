@@ -62,7 +62,7 @@ npx playwright show-report artifacts/reports/playwright-report
 ```
 agentic-playwright-demo/
 ├── specs/
-│   └── saucedemo.spec.md              # BDD specifications (4 scenarios)
+│   └── saucedemo.feature              # Gherkin format (4 scenarios)
 ├── tests/
 │   └── saucedemo.spec.ts              # Agent-generated tests (no page objects)
 ├── artifacts/                         # Generated output (git-ignored)
@@ -82,7 +82,9 @@ See [FOLDER_STRUCTURE.md](FOLDER_STRUCTURE.md) for detailed directory purposes.
 
 ## 📋 Test Scenarios
 
-All 4 scenarios test the **live Sauce Demo site** (`https://www.saucedemo.com`) in standard Gherkin format:
+All 4 scenarios test the **live Sauce Demo site** (`https://www.saucedemo.com`) in standard Gherkin format.
+
+See [specs/saucedemo.feature](specs/saucedemo.feature) for complete specification.
 
 ### Scenario 1: Valid login with standard credentials ✅
 ```gherkin
