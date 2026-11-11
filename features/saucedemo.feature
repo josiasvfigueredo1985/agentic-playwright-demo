@@ -30,13 +30,14 @@ Feature: Sauce Demo E-commerce Application
     Given I am authenticated as "standard_user"
     And I am viewing the product catalog
     When I add "Sauce Labs Backpack" to the cart
+    And I add "Sauce Labs Bike Light" to the cart
     And I open the shopping cart
     And I proceed to checkout
     And I enter the following information:
-      | field      | value  |
-      | first name | John   |
-      | last name  | Doe    |
-      | zip code   | 12345  |
+      | field      | value |
+      | first name | John  |
+      | last name  | Doe   |
+      | zip code   | 12345 |
     And I complete the purchase
     Then I should see the confirmation message "Thank you for your order!"
     And I should be on the order complete page

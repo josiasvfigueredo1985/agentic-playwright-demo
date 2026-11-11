@@ -5,7 +5,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: [['html', { outputFolder: '.playwright-results/report', open: 'never' }], ['list']],
-  outputFolder: '.playwright-results/artifacts',
+  outputDir: '.playwright-results/artifacts',
   use: {
     baseURL: 'https://saucedemo.com',
     browserName: 'chromium',

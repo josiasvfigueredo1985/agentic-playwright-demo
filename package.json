@@ -4,8 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "playwright test",
-    "new-tests": "echo 'Running new-tests agent skill...'",
-    "update-tests": "echo 'Running update-tests agent skill...'"
+    "agentic-pw": "node scripts/agentic-pw.cjs"
   },
   "keywords": [],
   "author": "",
