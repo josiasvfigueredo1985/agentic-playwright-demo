@@ -1,0 +1,5 @@
+# Test execution artifacts
+artifacts/evidence/**/*.png
+artifacts/evidence/**/*.mp4
+artifacts/evidence/**/*.json
+artifacts/reports/**/*

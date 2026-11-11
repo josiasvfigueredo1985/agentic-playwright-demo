@@ -1,5 +1,19 @@
-# Playwright CLI output (may contain credentials)
-.playwright-cli/
+# Build and dependencies
 node_modules/
-playwright-report/
-test-results/
+dist/
+build/
+
+# Test execution artifacts (reports, evidence, traces)
+artifacts/evidence/**/*.png
+artifacts/evidence/**/*.mp4
+artifacts/evidence/**/*.json
+artifacts/reports/
+
+# Playwright CLI (may contain credentials)
+.playwright-cli/
+.playwright/
+
+# IDE and OS
+.vscode/
+.DS_Store
+*.swp

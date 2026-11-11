@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Agent generates and runs tests dynamically\""
+    "test": "playwright test"
   },
   "keywords": [],
   "author": "",
