@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "playwright test"
+    "test": "playwright test",
+    "new-tests": "echo 'Running new-tests agent skill...'",
+    "update-tests": "echo 'Running update-tests agent skill...'"
   },
   "keywords": [],
   "author": "",

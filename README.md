@@ -61,6 +61,41 @@ npx playwright test --ui
 npm test -- --grep "login"
 ```
 
+## 🤖 Agent Commands
+
+### Add New Test Scenarios
+
+```bash
+npm run new-tests
+```
+
+This invokes the agent to:
+1. Analyze current tests and spec
+2. Ask you for new scenario descriptions
+3. Add scenarios to `specs/saucedemo.feature` with sequential IDs
+4. Explore `https://www.saucedemo.com` to discover locators
+5. Generate/update `tests/saucedemo.spec.ts` with all scenarios (old + new)
+6. Run `npm test` to validate all pass
+
+**Skill:** [.github/skills/new-tests/SKILL.md](.github/skills/new-tests/SKILL.md)
+
+### Regenerate All Tests from Scratch
+
+```bash
+npm run update-tests
+```
+
+This invokes the agent to:
+1. Delete `specs/saucedemo.feature` ⚠️
+2. Ask you to provide complete new specification
+3. Create fresh `specs/saucedemo.feature` from your input
+4. Explore `https://www.saucedemo.com` to discover all locators
+5. Generate brand new `tests/saucedemo.spec.ts` with all scenarios
+6. Run `npm test` to validate all pass
+
+**Use when:** Major UI changes, complete test reset, or restructuring all scenarios  
+**Skill:** [.github/skills/update-tests/SKILL.md](.github/skills/update-tests/SKILL.md)
+
 ## 📖 How to Use
 
 ### View Test Specifications
