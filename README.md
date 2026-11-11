@@ -84,6 +84,134 @@ All tests run against the live Sauce Demo site. Results include:
 - Screenshots (on failure only)
 - Traces and videos (on retry)
 
+## 🔄 How to Regenerate Specs
+
+Use this workflow when the `specs/saucedemo.feature` file is missing or needs to be recreated from scratch.
+
+### Step 1: Identify Test Scenarios
+
+Explore the application and document key user workflows. For Sauce Demo, identify:
+- **Login flows** (success, failure cases)
+- **Product interactions** (browse, sort, filter)
+- **Shopping cart** (add, remove, checkout)
+- **Edge cases** (locked-out user, invalid input)
+
+### Step 2: Create Spec File in Gherkin Format
+
+Create `specs/saucedemo.feature` with the following structure:
+
+```gherkin
+Feature: Application Name
+  As a user
+  I want to [action]
+  So that I can [benefit]
+
+  Scenario: [SL-01] Descriptive scenario name
+    Given I am in a starting state
+    When I perform an action
+    Then I should see expected result
+
+  Scenario: [SL-02] Another scenario
+    Given precondition
+    And another precondition
+    When I do something
+    And I do something else
+    Then expected outcome
+    And another outcome
+```
+
+**Gherkin Structure:**
+- **Feature:** High-level description of the application
+- **Scenario:** Individual test case with SL-## ID
+- **Given:** Initial conditions (setup)
+- **When:** Actions taken by the user
+- **Then:** Expected outcomes
+- **And:** Continuation of Given/When/Then
+
+### Step 3: Define Scenarios
+
+Write 4-5 core scenarios covering:
+
+1. **Happy path** — Normal user flow
+2. **Error handling** — Invalid input/locked user
+3. **Feature interaction** — Sorting, filtering, forms
+4. **End-to-end** — Multi-step workflow (cart → checkout)
+
+**Example for Sauce Demo:**
+
+```gherkin
+Scenario: [SL-01] Valid login with standard credentials
+  Given I am on the Sauce Demo login page
+  When I enter username "standard_user"
+  And I enter password "secret_sauce"
+  And I click the Login button
+  Then I should be authenticated
+  And I should be redirected to the inventory page
+
+Scenario: [SL-02] Login attempt with locked-out user
+  Given I am on the Sauce Demo login page
+  When I enter username "locked_out_user"
+  And I enter password "secret_sauce"
+  And I click the Login button
+  Then I should remain on the login page
+  And I should see the error message "Epic sadface: Sorry, this user has been locked out."
+
+Scenario: [SL-03] Sort products by price ascending
+  Given I am authenticated as "standard_user"
+  And I am viewing the product catalog
+  When I sort the products by "Price (low to high)"
+  Then the first product should be "Sauce Labs Onesie"
+  And the price should be "$7.99"
+
+Scenario: [SL-04] Complete end-to-end checkout flow
+  Given I am authenticated as "standard_user"
+  And I am viewing the product catalog
+  When I add "Sauce Labs Backpack" to the cart
+  And I open the shopping cart
+  And I proceed to checkout
+  And I enter the following information:
+    | field      | value  |
+    | first name | John   |
+    | last name  | Doe    |
+    | zip code   | 12345  |
+  And I complete the purchase
+  Then I should see the confirmation message "Thank you for your order!"
+  And I should be on the order complete page
+```
+
+### Step 4: Save Spec File
+
+Save the file as `specs/saucedemo.feature` (must use `.feature` extension for Gherkin format).
+
+### Step 5: Ask Agent to Generate Tests
+
+Provide the agent with:
+- The spec file path: `specs/saucedemo.feature`
+- The application URL: `https://www.saucedemo.com`
+- Output location: `tests/saucedemo.spec.ts`
+
+Agent will:
+1. **Parse specs** — Read all scenarios from the .feature file
+2. **Explore live** — Use playwright-cli to interact with the real application
+3. **Discover locators** — Find `data-test` attributes and element selectors
+4. **Generate tests** — Create Playwright test code with embedded selectors
+5. **Validate** — Run `npm test` and debug failures
+
+### Step 6: Verify Tests Pass
+
+```bash
+npm test
+# Expected output: 4 passed (20.7s) — Exit Code: 0
+```
+
+If tests fail:
+- Agent re-explores the application
+- Adjusts locators based on actual UI state
+- Regenerates test code
+- Re-runs validation
+
+**Result:** `specs/saucedemo.feature` is now the single source of truth, and `tests/saucedemo.spec.ts` is automatically generated.
+
 ## ➕ How to Add More Tests
 
 ### 1. Add Scenario to Spec File
