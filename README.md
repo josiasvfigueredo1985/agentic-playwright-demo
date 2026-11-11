@@ -13,17 +13,19 @@ Traditional Playwright suites rely on static page objects that couple tests to U
 - **Tests generated on-demand** — Agent creates test files in `tests/` from scratch, embedding discovered selectors directly.
 - **No page objects** — Eliminates coupling; tests adapt naturally when the UI changes.
 
-## Tested Workflow
+## Agentic Workflow (To Be Implemented)
 
-This project demonstrates the workflow in action:
+This project **requires an agent to generate tests**. The workflow should proceed as follows:
 
-1. ✅ Agent reads [4 BDD scenarios](specs/saucedemo.spec.md)
-2. ✅ Agent explores Sauce Demo with `playwright-cli`:
-   - Captures login page snapshot
-   - Finds form elements (Username, Password, Login button)
-   - Discovers `data-test` attributes: `username`, `password`, `login-button`, `shopping-cart-link`, `add-to-cart-*`, `inventory-item`
-3. ✅ Agent generates test file in `tests/saucedemo.spec.ts` using discovered locators
-4. ✅ **All 4 tests pass** against the live site (10.8s total)
+1. **Agent reads specs** — Parse [4 BDD scenarios](specs/saucedemo.spec.md)
+2. **Agent explores live** — Use `playwright-cli` to interact with Sauce Demo:
+   - Navigate to login page, capture snapshot
+   - Find form elements and discover `data-test` attributes
+   - Test user flows to understand navigation and UI structure
+3. **Agent generates tests** — Create `tests/saucedemo.spec.ts` from discovered locators and navigation flows
+4. **Agent validates** — Run `npm test` and fix failures until exit code 0
+
+The `tests/` directory is intentionally empty — tests must be **generated fresh by the agent**, not pre-written.
 
 ## Structure
 
@@ -128,61 +130,28 @@ The project implements 4 critical user journeys:
 
 ## Test Execution Evidence
 
-All tests run against the **live Sauce Demo site** (`https://saucedemo.com`):
+### Expected Results (After Agent Generation)
+
+All tests should run against the **live Sauce Demo site** (`https://saucedemo.com`):
 
 ```bash
-# Run all tests
+# Agent generates and runs tests
 npm test
 
-# Run a single test
-npm test -- --grep "logs in with valid credentials"
+# Expected output:
+Running 4 tests using 1 worker
 
-# Run with UI mode (interactive)
-npx playwright test --ui
+  ✓ Scenario 1: logs in with valid credentials (4.5s)
+  ✓ Scenario 2: shows an error when a locked-out user tries to log in (1.4s)
+  ✓ Scenario 3: sorts the catalog from the lowest price to the highest (1.9s)
+  ✓ Scenario 4: completes checkout for a Sauce Labs Backpack (1.3s)
 
-# View HTML report after run
-npx playwright show-report
+  4 passed (10.8s)
 ```
 
-Evidence is saved in:
-- `playwright-report/` — HTML test report with screenshots and traces
-- `test-results/` — Screenshots and traces on failure
+### Discovered Locators
 
-## Development Workflow
-
-### For Agents
-
-1. **Read spec** → Parse BDD criteria
-2. **Explore** → Use `playwright-cli` to interact with the target site
-   - `snapshot` to inspect page structure
-   - `find` to locate elements
-   - `eval` to discover data-test attributes
-3. **Generate** → Write test code that matches spec scenarios using discovered selectors
-4. **Validate** → Run `npm test`
-5. **Iterate** → Fix failures; exit code 0 = success
-6. **Cleanup** → `playwright-cli close`
-
-### For Humans
-
-To add a new scenario:
-1. Add a new BDD section to `specs/saucedemo.spec.md`
-2. Run `playwright-cli` to explore the new flow
-3. Add corresponding test to `tests/saucedemo.spec.ts`
-4. Run `npm test` to validate
-
-## Key Design Decisions
-
-| Decision | Rationale | Result |
-|----------|-----------|--------|
-| **No page objects** | Prevents coupling to UI structure; tests stay flexible when the app changes | ✅ Tests pass regardless of locator refactors |
-| **Specs as contract** | BDD format ensures agent and humans share the same acceptance criteria | ✅ All 4 scenarios validated |
-| **Dynamic generation** | Tests are created fresh for each run; eliminates stale locators | ✅ Tests discover `data-test` attributes live |
-| **CLI-first exploration** | Agent understands the UI before writing code; discovers edge cases | ✅ Found all 7 key data-test attributes |
-| **Live target** | Tests against real application, not mocks; validates actual user behavior | ✅ 10.8s total runtime, real network latency included |
-
-## Locators Discovered
-
-During exploration, the agent discovered these locators on Sauce Demo:
+The agent should discover these locators during exploration:
 
 ```javascript
 // Login form (Scenario 1 & 2)
