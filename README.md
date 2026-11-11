@@ -39,7 +39,7 @@ The included examples target Sauce Demo and ServeRest. To add another applicatio
 
 ### Prerequisites
 ```bash
-node --version  # v18+
+node --version  # v20+
 npm --version
 ```
 
@@ -74,6 +74,14 @@ npx playwright test --ui
 # Run single scenario
 npm test -- --grep "login"
 ```
+
+### GitHub Actions
+
+The Playwright workflow runs on pushes, pull requests, and manual dispatch. It installs dependencies and Chromium on the runner, checks the agent launcher, and runs all committed Playwright tests against the live applications in two shards. It does not invoke Copilot or require a Copilot token.
+
+Shard blob reports are retained for one day and merged into an HTML report artifact retained for seven days. Non-pull-request runs publish the merged report to GitHub Pages; enable Pages with **GitHub Actions** as its source in repository settings. The `github-pages` deployment environment can be created in **Settings → Environments**; GitHub also creates it automatically when a workflow references it. Pull requests do not publish to Pages.
+
+GitHub Pages reports may be publicly accessible and can contain test data or screenshots. Use only synthetic data and review reports before sharing. Generate and commit updated tests before relying on CI.
 
 ## 🤖 Agent Commands
 
