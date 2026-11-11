@@ -5,6 +5,7 @@ build/
 
 # Test execution results
 test-results/
+.playwright-results/
 
 # Playwright CLI (session cache)
 .playwright-cli/
@@ -17,3 +18,4 @@ test-results/
 .vscode/
 .DS_Store
 *.swp
+

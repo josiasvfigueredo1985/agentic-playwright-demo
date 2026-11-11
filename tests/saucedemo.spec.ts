@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 const BASE_URL = 'https://www.saucedemo.com';
 
 test.describe('Sauce Demo Functional Specifications', () => {
-  test('Scenario 1: Valid login', async ({ page }) => {
+  test('[SL-01] Valid login', async ({ page }) => {
     // Given: user is on the login page
     await page.goto(`${BASE_URL}/`);
     
@@ -17,7 +17,7 @@ test.describe('Sauce Demo Functional Specifications', () => {
     await expect(page.locator('text=Products')).toBeVisible();
   });
 
-  test('Scenario 2: Locked-out user', async ({ page }) => {
+  test('[SL-02] Locked-out user', async ({ page }) => {
     // Given: user is on the login page
     await page.goto(`${BASE_URL}/`);
     
@@ -31,7 +31,7 @@ test.describe('Sauce Demo Functional Specifications', () => {
     await expect(page.locator('text=Epic sadface: Sorry, this user has been locked out.')).toBeVisible();
   });
 
-  test('Scenario 3: Catalog sorting', async ({ page }) => {
+  test('[SL-03] Catalog sorting', async ({ page }) => {
     // Given: standard_user is authenticated and product catalog is displayed
     await page.goto(`${BASE_URL}/`);
     await page.locator('[data-test="username"]').fill('standard_user');
@@ -49,7 +49,7 @@ test.describe('Sauce Demo Functional Specifications', () => {
     await expect(firstProductItem.locator('text=$7.99')).toBeVisible();
   });
 
-  test('Scenario 4: Complete checkout', async ({ page }) => {
+  test('[SL-04] Complete checkout', async ({ page }) => {
     // Given: standard_user is authenticated and product catalog is displayed
     await page.goto(`${BASE_URL}/`);
     await page.locator('[data-test="username"]').fill('standard_user');
