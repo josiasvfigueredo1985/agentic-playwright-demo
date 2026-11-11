@@ -65,36 +65,64 @@ npm test -- --grep "login"
 
 ### Add New Test Scenarios
 
+**Purpose:** Expand your test suite by adding 1-2 new test scenarios while keeping all existing tests intact.
+
+**When to use:**
+- You want to add a new feature test
+- You want to expand existing test coverage
+- You want to keep all current scenarios running
+
+**What happens:**
+1. Agent analyzes current tests to find the highest scenario ID
+2. Agent reads current spec to understand existing scenarios
+3. Agent asks you: "What new test scenarios would you like to add?"
+4. You provide new scenarios in Gherkin format (e.g., [SL-05], [SL-06])
+5. Agent appends new scenarios to `specs/saucedemo.feature`
+6. Agent explores `https://www.saucedemo.com` to discover locators for NEW scenarios
+7. Agent generates/updates `tests/saucedemo.spec.ts` with all scenarios (old + new)
+8. Agent runs `npm test` to validate all tests pass
+9. Agent reports: "✅ 2 new tests added! Now 6 total scenarios passing"
+
+**Command:**
 ```bash
 npm run new-tests
 ```
 
-This invokes the agent to:
-1. Analyze current tests and spec
-2. Ask you for new scenario descriptions
-3. Add scenarios to `specs/saucedemo.feature` with sequential IDs
-4. Explore `https://www.saucedemo.com` to discover locators
-5. Generate/update `tests/saucedemo.spec.ts` with all scenarios (old + new)
-6. Run `npm test` to validate all pass
+**Skill Details:** [.github/skills/new-tests/SKILL.md](.github/skills/new-tests/SKILL.md)
 
-**Skill:** [.github/skills/new-tests/SKILL.md](.github/skills/new-tests/SKILL.md)
+---
 
 ### Regenerate All Tests from Scratch
 
+**Purpose:** Completely reset your test suite by deleting the spec and regenerating everything fresh. Use this for major application changes or when you want to start over.
+
+**When to use:**
+- Major UI changes to the application
+- You want to reset and restructure all test scenarios
+- You're changing the test scope or focus
+
+**When NOT to use:**
+- ❌ For adding a few new tests → Use `npm run new-tests` instead
+- ❌ If you want to keep existing scenarios → Use `npm run new-tests` instead
+
+**What happens (⚠️ Destructive):**
+1. Agent warns: "⚠️ This will DELETE specs/saucedemo.feature"
+2. Agent asks: "Do you want to continue? (yes/no)"
+3. If you confirm, agent deletes `specs/saucedemo.feature`
+4. Agent asks: "Please provide the complete new specification"
+5. You provide all scenarios in Gherkin format from scratch
+6. Agent creates fresh `specs/saucedemo.feature` with your scenarios
+7. Agent explores `https://www.saucedemo.com` to discover ALL locators
+8. Agent generates brand new `tests/saucedemo.spec.ts` with all scenarios
+9. Agent runs `npm test` to validate all pass
+10. Agent reports: "✅ All tests regenerated! 5 scenarios now passing"
+
+**Command:**
 ```bash
 npm run update-tests
 ```
 
-This invokes the agent to:
-1. Delete `specs/saucedemo.feature` ⚠️
-2. Ask you to provide complete new specification
-3. Create fresh `specs/saucedemo.feature` from your input
-4. Explore `https://www.saucedemo.com` to discover all locators
-5. Generate brand new `tests/saucedemo.spec.ts` with all scenarios
-6. Run `npm test` to validate all pass
-
-**Use when:** Major UI changes, complete test reset, or restructuring all scenarios  
-**Skill:** [.github/skills/update-tests/SKILL.md](.github/skills/update-tests/SKILL.md)
+**Skill Details:** [.github/skills/update-tests/SKILL.md](.github/skills/update-tests/SKILL.md)
 
 ## 📖 How to Use
 
