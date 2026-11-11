@@ -20,21 +20,29 @@ function findFeatures(directory, isRoot = true) {
   });
 }
 
-function main(run = spawnSync, featureDirectory = path.join(root, 'features')) {
-  const features = findFeatures(featureDirectory);
+function main(run = spawnSync, featureDirectory = path.join(root, 'features'), args = []) {
+  if (args.length && (args.length !== 2 || args[0] !== '--sut' || !/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(args[1]))) {
+    throw new Error('Usage: npm run agentic-pw -- [--sut <project-name>]');
+  }
+  const sut = args[1];
+  const selectedFeatures = sut ? path.join(featureDirectory, sut) : featureDirectory;
+  const features = findFeatures(selectedFeatures);
   if (!features.length) {
-    console.error('No .feature files found under features/. Add a feature file before running agentic-pw.');
+    console.error(`No .feature files found under ${sut ? `features/${sut}/` : 'features/'}. Add a feature file before running agentic-pw.`);
     return 1;
   }
 
+  const testCommand = sut ? `npm test -- --project=${sut}` : 'npm test';
   const temporaryDirectory = mkdtempSync(path.join(os.tmpdir(), 'agentic-pw-'));
   const completionFile = path.join(temporaryDirectory, 'complete.txt');
   try {
     console.log(`Found ${features.length} feature file(s). Starting Copilot in unattended mode.`);
     const prompt = [
-      'Use the /spec-driven-playwright skill to synchronize Playwright tests with the feature files.',
+      sut
+        ? `Use the /spec-driven-playwright skill to synchronize only SUT "${sut}": features/${sut}/ and the matching Playwright project and tests. Do not modify or run tests for other SUTs.`
+        : 'Use the /spec-driven-playwright skill to synchronize all SUTs and their matching Playwright projects.',
       'This run is unattended. Do not ask questions or guess missing requirements.',
-      'Only after the entire task is complete and npm test passes, write exactly success to this completion file:',
+      `Only after the entire task is complete and ${testCommand} passes, write exactly success to this completion file:`,
       JSON.stringify(completionFile),
       'If anything is unclear or fails, explain the problem and do not write the completion file.',
     ].join('\n');
@@ -61,9 +69,11 @@ function main(run = spawnSync, featureDirectory = path.join(root, 'features')) {
     if (completion !== 'success') throw new Error('Copilot returned an invalid completion status. Review its output.');
 
     console.log('Verifying the generated tests.');
-    const testCommand = process.platform === 'win32' ? process.env.ComSpec || 'cmd.exe' : 'npm';
-    const testArgs = process.platform === 'win32' ? ['/d', '/s', '/c', 'npm test'] : ['test'];
-    const verification = run(testCommand, testArgs, { cwd: root, stdio: ['ignore', 'inherit', 'inherit'] });
+    const executable = process.platform === 'win32' ? process.env.ComSpec || 'cmd.exe' : 'npm';
+    const testArgs = process.platform === 'win32'
+      ? ['/d', '/s', '/c', testCommand]
+      : sut ? ['test', '--', `--project=${sut}`] : ['test'];
+    const verification = run(executable, testArgs, { cwd: root, stdio: ['ignore', 'inherit', 'inherit'] });
     if (verification.error) throw verification.error;
     if (verification.status === null) throw new Error(`Test verification terminated by ${verification.signal}.`);
     return verification.status;
@@ -74,7 +84,7 @@ function main(run = spawnSync, featureDirectory = path.join(root, 'features')) {
 
 if (require.main === module) {
   try {
-    process.exitCode = main();
+    process.exitCode = main(spawnSync, path.join(root, 'features'), process.argv.slice(2));
   } catch (error) {
     console.error(`Unable to run agentic-pw: ${error.message}`);
     process.exitCode = 1;

@@ -71,6 +71,50 @@ test('starts Copilot even when an existing feature changes without changing its 
   });
 });
 
+test('limits a selected SUT to its feature folder, prompt, and Playwright project', () => {
+  withDirectory(directory => {
+    mkdirSync(path.join(directory, 'first'));
+    mkdirSync(path.join(directory, 'second'));
+    writeFileSync(path.join(directory, 'first', 'example.feature'), 'Scenario: [A-01] Example\n');
+    writeFileSync(path.join(directory, 'second', 'example.feature'), 'Scenario: [B-01] Example\n');
+    const calls = [];
+    assert.equal(main((command, args) => {
+      calls.push({ command, args });
+      if (calls.length === 1) complete(args.at(-1));
+      return { status: 0 };
+    }, directory, ['--sut', 'second']), 0);
+    assert.match(calls[0].args.at(-1), /only SUT "second"/);
+    assert.match(calls[0].args.at(-1), /features\/second\//);
+    assert.match(calls[1].args.join(' '), /--project=second/);
+  });
+});
+
+test('processes all SUTs and runs all projects by default', () => {
+  withDirectory(directory => {
+    for (const sut of ['first', 'second']) {
+      mkdirSync(path.join(directory, sut));
+      writeFileSync(path.join(directory, sut, 'example.feature'), 'Scenario: [A-01] Example\n');
+    }
+    const calls = [];
+    assert.equal(main((command, args) => {
+      calls.push({ command, args });
+      if (calls.length === 1) complete(args.at(-1));
+      return { status: 0 };
+    }, directory), 0);
+    assert.match(calls[0].args.at(-1), /all SUTs/);
+    assert.doesNotMatch(calls[1].args.join(' '), /--project/);
+  });
+});
+
+test('rejects invalid selection and missing SUT features before starting Copilot', () => {
+  withDirectory(directory => {
+    const run = () => { throw new Error('Copilot should not start'); };
+    assert.throws(() => main(run, directory, ['--sut', '../outside']), /Usage:/);
+    assert.throws(() => main(run, directory, ['--sut']), /Usage:/);
+    assert.equal(main(run, directory, ['--sut', 'missing']), 1);
+  });
+});
+
 test('fails closed without confirmation and propagates independent test failures', () => {
   withDirectory(directory => {
     writeFileSync(path.join(directory, 'example.feature'), 'Feature: Example\n');
