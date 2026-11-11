@@ -3,19 +3,15 @@ node_modules/
 dist/
 build/
 
-# Test execution artifacts (reports, evidence, traces)
-artifacts/evidence/**/*.png
-artifacts/evidence/**/*.mp4
-artifacts/evidence/**/*.json
-artifacts/reports/
+# Test execution results
+test-results/
 
-# Playwright CLI (may contain credentials)
+# Playwright CLI (session cache)
 .playwright-cli/
 .playwright/
 
 # Session and temporary
 .claude/
-test-results/
 
 # IDE and OS
 .vscode/
