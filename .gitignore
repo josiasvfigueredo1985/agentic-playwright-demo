@@ -13,6 +13,10 @@ artifacts/reports/
 .playwright-cli/
 .playwright/
 
+# Session and temporary
+.claude/
+test-results/
+
 # IDE and OS
 .vscode/
 .DS_Store
