@@ -82,30 +82,56 @@ See [FOLDER_STRUCTURE.md](FOLDER_STRUCTURE.md) for detailed directory purposes.
 
 ## 📋 Test Scenarios
 
-All 4 scenarios test the **live Sauce Demo site** (`https://www.saucedemo.com`):
+All 4 scenarios test the **live Sauce Demo site** (`https://www.saucedemo.com`) in standard Gherkin format:
 
-### Scenario 1: Valid Login ✅
-**Given** user is on the login page  
-**When** enters `standard_user` / `secret_sauce`  
-**Then** redirects to `/inventory.html`  
+### Scenario 1: Valid login with standard credentials ✅
+```gherkin
+Given I am on the Sauce Demo login page
+When I enter username "standard_user"
+And I enter password "secret_sauce"
+And I click the Login button
+Then I should be authenticated
+And I should be redirected to the inventory page
+```
 **Status:** PASS (964ms)
 
-### Scenario 2: Locked-Out User ✅
-**Given** user is on the login page  
-**When** enters `locked_out_user` / `secret_sauce`  
-**Then** shows error "Epic sadface: Sorry, this user has been locked out."  
+### Scenario 2: Login attempt with locked-out user ✅
+```gherkin
+Given I am on the Sauce Demo login page
+When I enter username "locked_out_user"
+And I enter password "secret_sauce"
+And I click the Login button
+Then I should remain on the login page
+And I should see the error message "Epic sadface: Sorry, this user has been locked out."
+```
 **Status:** PASS (893ms)
 
-### Scenario 3: Catalog Sorting ✅
-**Given** user logged in and viewing products  
-**When** sorts by "Price (low to high)"  
-**Then** first product is "Sauce Labs Onesie" at $7.99  
+### Scenario 3: Sort products by price ascending ✅
+```gherkin
+Given I am authenticated as "standard_user"
+And I am viewing the product catalog
+When I sort the products by "Price (low to high)"
+Then the first product should be "Sauce Labs Onesie"
+And the price should be "$7.99"
+```
 **Status:** PASS (16.2s)
 
-### Scenario 4: Complete Checkout ✅
-**Given** user logged in and viewing products  
-**When** adds "Sauce Labs Backpack" → opens cart → checks out with name/address  
-**Then** shows "Thank you for your order!"  
+### Scenario 4: Complete end-to-end checkout flow ✅
+```gherkin
+Given I am authenticated as "standard_user"
+And I am viewing the product catalog
+When I add "Sauce Labs Backpack" to the cart
+And I open the shopping cart
+And I proceed to checkout
+And I enter the following information:
+  | field      | value  |
+  | first name | John   |
+  | last name  | Doe    |
+  | zip code   | 12345  |
+And I complete the purchase
+Then I should see the confirmation message "Thank you for your order!"
+And I should be on the order complete page
+```
 **Status:** PASS (1.0s)
 
 ## 🔍 How It Works

@@ -1,33 +1,42 @@
-# Sauce Demo Functional Specification
+Feature: Sauce Demo E-commerce Application
+  As a user
+  I want to authenticate, browse products, and complete checkout
+  So that I can purchase items from the Sauce Demo store
 
-Target: [Sauce Demo](https://saucedemo.com)
+  Scenario: Valid login with standard credentials
+    Given I am on the Sauce Demo login page
+    When I enter username "standard_user"
+    And I enter password "secret_sauce"
+    And I click the Login button
+    Then I should be authenticated
+    And I should be redirected to the inventory page
 
-## Scenario 1: Valid login
+  Scenario: Login attempt with locked-out user
+    Given I am on the Sauce Demo login page
+    When I enter username "locked_out_user"
+    And I enter password "secret_sauce"
+    And I click the Login button
+    Then I should remain on the login page
+    And I should see the error message "Epic sadface: Sorry, this user has been locked out."
 
-**Given** the user is on the Sauce Demo login page  
-**When** the user enters `standard_user` and `secret_sauce` and submits the login form  
-**Then** the user is authenticated  
-**And** the browser navigates to `/inventory.html`
+  Scenario: Sort products by price ascending
+    Given I am authenticated as "standard_user"
+    And I am viewing the product catalog
+    When I sort the products by "Price (low to high)"
+    Then the first product should be "Sauce Labs Onesie"
+    And the price should be "$7.99"
 
-## Scenario 2: Locked-out user
-
-**Given** the user is on the Sauce Demo login page  
-**When** the user enters `locked_out_user` and `secret_sauce` and submits the login form  
-**Then** the user remains on the login page  
-**And** the page displays `Epic sadface: Sorry, this user has been locked out.`
-
-## Scenario 3: Catalog sorting
-
-**Given** `standard_user` is authenticated and the product catalog is displayed  
-**When** the user sorts products by "Price (low to high)"  
-**Then** the first product is "Sauce Labs Onesie"  
-**And** its price is `$7.99`
-
-## Scenario 4: Complete checkout
-
-**Given** `standard_user` is authenticated and the product catalog is displayed  
-**When** the user adds "Sauce Labs Backpack" to the cart  
-**And** opens the cart and starts checkout  
-**And** enters a first name, last name, and ZIP code  
-**And** reviews the order and completes the purchase  
-**Then** the page displays "Thank you for your order!"
+  Scenario: Complete end-to-end checkout flow
+    Given I am authenticated as "standard_user"
+    And I am viewing the product catalog
+    When I add "Sauce Labs Backpack" to the cart
+    And I open the shopping cart
+    And I proceed to checkout
+    And I enter the following information:
+      | field      | value  |
+      | first name | John   |
+      | last name  | Doe    |
+      | zip code   | 12345  |
+    And I complete the purchase
+    Then I should see the confirmation message "Thank you for your order!"
+    And I should be on the order complete page
