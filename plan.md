@@ -1,27 +1,27 @@
-Atue como um Engenheiro de QA Sênior especializado em Spec-Driven Testing (SDD) e automação com Playwright. Crie do zero uma suíte completa de testes automatizados para o Sauce Labs Demo (`https://saucedemo.com`) seguindo exatamente estes passos no terminal e no workspace:
+Act as a Senior QA Engineer specializing in Spec-Driven Testing (SDD) and Playwright automation. Create a complete automated test suite from scratch for the Sauce Labs Demo (`https://saucedemo.com`), following these exact steps in the terminal and workspace:
 
-### Fase 1: Setup do Projeto e Playwright CLI
-1. Inicialize um projeto Node.js (`npm init -y`) e instale o Playwright Test (`npm install -D @playwright/test @types/node`) e os navegadores necessários (`npx playwright install chromium`).
-2. Instale o Playwright CLI globalmente (`npm install -g @playwright/cli@latest`) e instale suas skills nativas (`playwright-cli install --skills`).
-3. Garanta que as skills instaladas do `playwright-cli` fiquem acessíveis em `.github/skills/playwright-cli/` para que o GitHub Copilot as reconheça nativamente.
-4. Crie o arquivo `playwright.config.ts` configurado para rodar em Chromium, com `baseURL: 'https://saucedemo.com'`, `testIdAttribute: 'data-test'`, screenshots em caso de falha e relatório HTML.
+### Phase 1: Project Setup and Playwright CLI
+1. Initialize a Node.js project (`npm init -y`), install Playwright Test (`npm install -D @playwright/test @types/node`), and install the required browser (`npx playwright install chromium`).
+2. Install the Playwright CLI globally (`npm install -g @playwright/cli@latest`) and install its native skills (`playwright-cli install --skills`).
+3. Ensure the skills installed by `playwright-cli` are accessible in `.github/skills/playwright-cli/` so GitHub Copilot can recognize them natively.
+4. Create `playwright.config.ts`, configured to run in Chromium, with `baseURL: 'https://saucedemo.com'`, `testIdAttribute: 'data-test'`, screenshots on failure, and an HTML report.
 
-### Fase 2: Criação da Skill Spec-Driven
-5. Crie o arquivo `.github/skills/spec-driven-playwright/SKILL.md` com instruções claras para:
-   - Ler especificações em `specs/*.spec.md`.
-   - Explorar e validar os cenários no navegador real usando `playwright-cli open`, `playwright-cli snapshot` e comandos de interação antes de escrever código.
-   - Gerar arquivos de teste limpos em `tests/*.spec.ts` usando Page Object Model (POM) ou seletores resilientes (`getByTestId`, `getByRole`, `getByPlaceholder`).
-   - Executar `npx playwright test` para comprovar que a suíte passa e encerrar a sessão com `playwright-cli close`.
+### Phase 2: Creating the Spec-Driven Skill
+5. Create `.github/skills/spec-driven-playwright/SKILL.md` with clear instructions to:
+   - Read specifications in `specs/*.spec.md`.
+   - Explore and validate scenarios in a real browser using `playwright-cli open`, `playwright-cli snapshot`, and interaction commands before writing code.
+   - Generate clean test files in `tests/*.spec.ts` using the Page Object Model (POM) or resilient selectors (`getByTestId`, `getByRole`, `getByPlaceholder`).
+   - Run `npx playwright test` to verify that the suite passes, then close the session with `playwright-cli close`.
 
-### Fase 3: Especificação Funcional (Spec)
-6. Crie o arquivo `specs/saucedemo.spec.md` detalhando os critérios de aceite em formato BDD (Dado/Quando/Então) para:
-   - **Cenário 1 (Login válido):** Autenticar com `standard_user` / `secret_sauce` e validar redirecionamento para `/inventory.html`.
-   - **Cenário 2 (Usuário bloqueado):** Tentar logar com `locked_out_user` / `secret_sauce` e validar a mensagem de bloqueio.
-   - **Cenário 3 (Ordenação de catálogo):** Logar, ordenar produtos por "Price (low to high)" e validar que o primeiro item é o mais barato ($7.99).
-   - **Cenário 4 (Fluxo completo de Checkout E2E):** Adicionar "Sauce Labs Backpack" ao carrinho, ir ao carrinho, fazer checkout preenchendo Nome, Sobrenome e CEP, finalizar compra e validar "Thank you for your order!".
+### Phase 3: Functional Specification (Spec)
+6. Create `specs/saucedemo.spec.md`, detailing the acceptance criteria in BDD (Given/When/Then) format for:
+   - **Scenario 1 (Valid login):** Authenticate with `standard_user` / `secret_sauce` and verify the redirect to `/inventory.html`.
+   - **Scenario 2 (Locked-out user):** Attempt to log in with `locked_out_user` / `secret_sauce` and verify the lockout message.
+   - **Scenario 3 (Catalog sorting):** Log in, sort products by "Price (low to high)", and verify that the first item is the cheapest ($7.99).
+   - **Scenario 4 (Complete E2E checkout flow):** Add "Sauce Labs Backpack" to the cart, go to the cart, check out by entering a first name, last name, and ZIP code, complete the purchase, and verify "Thank you for your order!".
 
-### Fase 4: Execução Real e Geração da Suíte
-7. Siga a skill que você acabou de criar: use o `playwright-cli` no terminal para abrir `https://saucedemo.com`, inspecionar os elementos reais via snapshot e validar os fluxos.
-8. Crie a estrutura de Page Objects em `pages/` (ex: `LoginPage.ts`, `InventoryPage.ts`, `CartPage.ts`, `CheckoutPage.ts`) e a suíte de testes em `tests/saucedemo.spec.ts`.
-9. Execute `npx playwright test` no terminal, corrija qualquer falha se houver até que 100% dos testes passem, feche o navegador do CLI (`playwright-cli close`) e me apresente a estrutura final de arquivos criada.
+### Phase 4: Live Execution and Suite Generation
+7. Follow the skill you just created: use `playwright-cli` in the terminal to open `https://saucedemo.com`, inspect the actual elements using snapshots, and validate the flows.
+8. Create the Page Objects structure in `pages/` (e.g., `LoginPage.ts`, `InventoryPage.ts`, `CartPage.ts`, `CheckoutPage.ts`) and the test suite in `tests/saucedemo.spec.ts`.
+9. Run `npx playwright test` in the terminal, fixing any failures until 100% of the tests pass. Close the CLI browser (`playwright-cli close`) and present the final file structure.
 
