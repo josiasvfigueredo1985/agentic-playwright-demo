@@ -185,17 +185,54 @@ Save the file as `specs/saucedemo.feature` (must use `.feature` extension for Gh
 
 ### Step 5: Ask Agent to Generate Tests
 
-Provide the agent with:
-- The spec file path: `specs/saucedemo.feature`
-- The application URL: `https://www.saucedemo.com`
-- Output location: `tests/saucedemo.spec.ts`
+**Command to invoke the agent:**
 
-Agent will:
-1. **Parse specs** — Read all scenarios from the .feature file
-2. **Explore live** — Use playwright-cli to interact with the real application
-3. **Discover locators** — Find `data-test` attributes and element selectors
-4. **Generate tests** — Create Playwright test code with embedded selectors
-5. **Validate** — Run `npm test` and debug failures
+```
+Read the spec file at specs/saucedemo.feature, then:
+
+1. Explore https://www.saucedemo.com using playwright-cli
+   - Identify the login form elements
+   - Discover all data-test attributes
+   - Navigate through key user flows
+   - Capture selectors for all interactions
+
+2. Generate tests/saucedemo.spec.ts
+   - Map each scenario to a Playwright test function
+   - Use discovered locators (e.g., [data-test="username"])
+   - Match test structure: Given (setup) → When (action) → Then (verify)
+   - Include all assertions from the spec
+   - No page objects; embed selectors directly
+
+3. Run validation
+   - Execute: npm test
+   - Debug any failures by re-exploring
+   - Ensure exit code 0 with all tests passing
+
+4. Report results
+   - Confirm test file was generated
+   - Show test execution summary
+   - List discovered locators
+```
+
+**What the agent will do:**
+
+1. **Parse specs** — Read all 4 scenarios from `specs/saucedemo.feature`
+2. **Explore live** — Launch browser, navigate flows, capture selectors
+3. **Discover locators** — Find `data-test` attributes and element paths
+4. **Generate tests** — Create `tests/saucedemo.spec.ts` with embedded selectors
+5. **Validate** — Run `npm test` and fix failures until exit code 0
+
+**Example agent input:**
+
+```
+I've created specs/saucedemo.feature with 4 test scenarios [SL-01 through SL-04].
+Please generate tests/saucedemo.spec.ts by:
+- Reading the spec file
+- Exploring https://www.saucedemo.com
+- Discovering locators (data-test attributes)
+- Generating Playwright test code
+- Running npm test to validate all scenarios pass
+```
 
 ### Step 6: Verify Tests Pass
 
