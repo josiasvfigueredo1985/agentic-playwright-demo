@@ -1,48 +1,29 @@
 import type { Locator, Page } from "@playwright/test";
 
 export class SearchResultsPage {
-  readonly availableResult: Locator;
+  private readonly addToCartName = /^(Add to cart|Ajouter au panier)$/;
+  readonly firstAvailableProduct: Locator;
 
   constructor(private readonly page: Page) {
-    this.availableResult = page
+    this.firstAvailableProduct = page
       .getByRole("listitem")
-      .filter({ has: page.getByRole("heading") })
       .filter({
-        has: page.getByRole("button", {
-          name: /^(Add to cart|Ajouter au panier)$/,
-        }),
-      });
+        has: page.getByRole("button", { name: this.addToCartName }),
+      })
+      .first();
   }
 
-  /** Adds the first result with an enabled purchase action and returns its title. */
-  async addAvailableResultToCart(): Promise<string> {
-    const result = this.availableResult.first();
-    const title = (await result.getByRole("heading").first().innerText()).trim();
-    await result
-      .getByRole("button", { name: /^(Add to cart|Ajouter au panier)$/ })
+  /** Full name of the first result that has an enabled purchase action. */
+  async availableProductName(): Promise<string> {
+    const name = await this.firstAvailableProduct
+      .getByRole("heading", { level: 2 })
+      .innerText();
+    return name.trim();
+  }
+
+  async addFirstAvailableProductToCart() {
+    await this.firstAvailableProduct
+      .getByRole("button", { name: this.addToCartName })
       .click();
-    return title;
-  }
-}
-
-export class CartPage {
-  readonly goToCartLink: Locator;
-
-  constructor(private readonly page: Page) {
-    this.goToCartLink = page.getByRole("link", {
-      name: /^(Go to cart|Aller au panier)$/,
-    });
-  }
-
-  /** Opens the cart from the confirmation shown after adding a product. */
-  async open() {
-    await this.goToCartLink.click();
-  }
-
-  item(title: string): Locator {
-    return this.page
-      .getByRole("main")
-      .getByRole("listitem")
-      .filter({ has: this.page.getByRole("heading", { name: title }) });
   }
 }

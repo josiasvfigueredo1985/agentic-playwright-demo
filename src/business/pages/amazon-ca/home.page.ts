@@ -1,20 +1,15 @@
-import type { Locator, Page } from "@playwright/test";
+import { errors, type Locator, type Page } from "@playwright/test";
 
-export class HomePage {
+export class AmazonHomePage {
   readonly searchBox: Locator;
-  readonly languageLink: Locator;
-  readonly frenchSearchBox: Locator;
+  readonly interestNoticeContinue: Locator;
 
   constructor(private readonly page: Page) {
-    this.frenchSearchBox = page.getByRole("searchbox", {
-      name: "Rechercher Amazon.ca",
-      exact: true,
-    });
     this.searchBox = page.getByRole("searchbox", {
       name: /^(Search|Rechercher) Amazon\.ca$/,
     });
-    this.languageLink = page.getByRole("link", {
-      name: /^(Choose a language for shopping in Amazon Canada|Choisissez en quelle langue magasiner sur AmazonCanada)/,
+    this.interestNoticeContinue = page.getByRole("button", {
+      name: "Continue Shopping",
     });
   }
 
@@ -22,12 +17,25 @@ export class HomePage {
     await this.page.goto("/");
   }
 
-  async search(term: string) {
-    await this.searchBox.fill(term);
-    await this.searchBox.press("Enter");
+  /** The notice is optional and can appear shortly after page load. */
+  async dismissInterestNoticeIfShown() {
+    try {
+      await this.interestNoticeContinue.waitFor({
+        state: "visible",
+        timeout: 5_000,
+      });
+    } catch (error) {
+      if (error instanceof errors.TimeoutError) return;
+      throw error;
+    }
+    await this.interestNoticeContinue.click();
   }
 
-  async openLanguageSettings() {
-    await this.languageLink.click();
+  async fillSearch(term: string) {
+    await this.searchBox.fill(term);
+  }
+
+  async submitSearch() {
+    await this.searchBox.press("Enter");
   }
 }

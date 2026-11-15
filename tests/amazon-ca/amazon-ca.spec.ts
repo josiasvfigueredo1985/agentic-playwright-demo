@@ -1,46 +1,53 @@
 import { test, expect } from "@fixtures/network";
-import { HomePage } from "../../src/business/pages/amazon-ca/home.page";
+import { CartPage } from "../../src/business/pages/amazon-ca/cart.page";
+import { AmazonHomePage } from "../../src/business/pages/amazon-ca/home.page";
 import { LanguageSettingsPage } from "../../src/business/pages/amazon-ca/language-settings.page";
-import {
-  CartPage,
-  SearchResultsPage,
-} from "../../src/business/pages/amazon-ca/search-results.page";
+import { SearchResultsPage } from "../../src/business/pages/amazon-ca/search-results.page";
 
 test.describe("Amazon Canada shopping cart", () => {
-  let home: HomePage;
+  let home: AmazonHomePage;
+  let language: LanguageSettingsPage;
   let results: SearchResultsPage;
   let cart: CartPage;
 
   test.beforeEach(async ({ page }) => {
-    home = new HomePage(page);
+    home = new AmazonHomePage(page);
+    language = new LanguageSettingsPage(page);
     results = new SearchResultsPage(page);
     cart = new CartPage(page);
     await home.goto();
+    await home.dismissInterestNoticeIfShown();
   });
 
   test("[AM-01] Search for a notebook and add it to the cart", async () => {
-    await home.search("notebook");
-    const title = await results.addAvailableResultToCart();
+    await home.fillSearch("notebook");
+    await home.submitSearch();
+    const productName = await results.availableProductName();
+    await results.addFirstAvailableProductToCart();
     await cart.open();
 
-    await expect(cart.item(title)).toBeVisible();
+    await expect(cart.product(productName)).toBeVisible();
   });
 
-  test("[AM-02] Change language to French in Canadian Amazon", async ({
-    page,
-  }) => {
-    const language = new LanguageSettingsPage(page);
+  for (const item of ["notebook", "laptop", "smartphone"]) {
+    test(`[AM-02] Change language to French in Canadian Amazon and search for ${item}`, async () => {
+      await expect(home.searchBox).toHaveAccessibleName("Search Amazon.ca");
 
-    await expect(home.frenchSearchBox).toHaveCount(0);
-    await home.openLanguageSettings();
-    await language.select("français - FR");
+      await language.open();
+      await language.select.french();
+      await language.save();
 
-    await expect(home.frenchSearchBox).toBeVisible();
+      await expect(home.searchBox).toHaveAccessibleName("Rechercher Amazon.ca", {
+        timeout: 15_000,
+      });
 
-    await home.search("notebook");
-    const title = await results.addAvailableResultToCart();
-    await cart.open();
+      await home.fillSearch(item);
+      await home.submitSearch();
+      const productName = await results.availableProductName();
+      await results.addFirstAvailableProductToCart();
+      await cart.open();
 
-    await expect(cart.item(title)).toBeVisible();
-  });
+      await expect(cart.product(productName)).toBeVisible();
+    });
+  }
 });

@@ -1,18 +1,7 @@
 import type { Locator, Page } from "@playwright/test";
 
-export class CartPage {
-  readonly checkoutButton: Locator;
-
-  constructor(page: Page) {
-    this.checkoutButton = page.getByRole("button", { name: "Checkout" });
-  }
-
-  async proceedToCheckout() {
-    await this.checkoutButton.click();
-  }
-}
-
 export class CheckoutPage {
+  readonly checkoutButton: Locator;
   readonly firstName: Locator;
   readonly lastName: Locator;
   readonly zipCode: Locator;
@@ -21,9 +10,10 @@ export class CheckoutPage {
   readonly confirmation: Locator;
 
   constructor(page: Page) {
-    this.firstName = page.getByRole("textbox", { name: "First Name" });
-    this.lastName = page.getByRole("textbox", { name: "Last Name" });
-    this.zipCode = page.getByRole("textbox", { name: "Zip/Postal Code" });
+    this.checkoutButton = page.getByRole("button", { name: "Checkout" });
+    this.firstName = page.getByPlaceholder("First Name");
+    this.lastName = page.getByPlaceholder("Last Name");
+    this.zipCode = page.getByPlaceholder("Zip/Postal Code");
     this.continueButton = page.getByRole("button", { name: "Continue" });
     this.finishButton = page.getByRole("button", { name: "Finish" });
     this.confirmation = page.getByRole("heading", {
@@ -31,18 +21,27 @@ export class CheckoutPage {
     });
   }
 
-  async enterInformation(info: {
-    firstName: string;
-    lastName: string;
-    zipCode: string;
-  }) {
-    await this.firstName.fill(info.firstName);
-    await this.lastName.fill(info.lastName);
-    await this.zipCode.fill(info.zipCode);
+  async proceedToCheckout() {
+    await this.checkoutButton.click();
+  }
+
+  async fillFirstName(value: string) {
+    await this.firstName.fill(value);
+  }
+
+  async fillLastName(value: string) {
+    await this.lastName.fill(value);
+  }
+
+  async fillZipCode(value: string) {
+    await this.zipCode.fill(value);
+  }
+
+  async continueToOverview() {
     await this.continueButton.click();
   }
 
-  async complete() {
+  async finish() {
     await this.finishButton.click();
   }
 }

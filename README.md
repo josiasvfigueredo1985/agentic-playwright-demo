@@ -2,6 +2,23 @@
 
 A **spec-driven Playwright testing approach** where agents explore applications and generate tests with page and component objects as needed.
 
+## Contents
+
+- [Core Concept](#-core-concept)
+- [Architecture](#-architecture)
+- [How to Run](#-how-to-run)
+  - [Prerequisites](#prerequisites)
+  - [Setup](#setup)
+  - [Execute Tests](#execute-tests)
+  - [GitHub Actions](#github-actions)
+- [Agent Commands](#-agent-commands)
+  - [Synchronize Tests with Features](#synchronize-tests-with-features)
+  - [Network synchronization](#network-synchronization)
+- [Try the agent](#try-the-agent)
+- [How to Use](#-how-to-use)
+- [How to Regenerate Specs](#-how-to-regenerate-specs)
+- [How to Add More Tests](#-how-to-add-more-tests)
+
 ## 🎯 Core Concept
 
 **Agentic approach:**
@@ -35,7 +52,7 @@ Project Structure
 3. Agent generates Playwright tests with discovered locators
 4. Agent runs `npm test` and validates all pass
 
-Generated and updated specs group scenarios under a feature-named `test.describe`, use `test.beforeEach` for genuinely shared navigation, keep scenario assertions explicit, and use page or component objects for UI-specific actions. Existing unchanged tests are not automatically refactored.
+Generated and updated specs group scenarios under a feature-named `test.describe`, use `test.beforeEach` for genuinely shared navigation, keep scenario assertions explicit, and use page or component objects for UI-specific actions. The agent also checks existing scenarios for duplication and may refactor directly related tests while preserving their behavior.
 
 The included examples target Sauce Demo and Amazon Canada. To add another application, add a named project with its URL and test directory in `playwright.config.ts`, and put its features in `src/business/features/<project-name>/` and tests in the matching test directory. Project names used with `--sut` must contain only letters, digits, hyphens, or underscores and start with a letter or digit.
 
@@ -47,21 +64,43 @@ node --version  # v20+
 npm --version
 ```
 
-The agent commands also require the **GitHub Copilot CLI** and an active Copilot subscription. On Windows, install it with:
+The agent commands also require the **GitHub Copilot CLI** and an active Copilot subscription. Install it for your platform:
+
+**Windows (PowerShell and WinGet):**
 
 ```powershell
 winget install --id GitHub.Copilot --exact
 ```
 
-On first use, run `copilot` and follow the `/login` instructions. The CLI is a global tool, not a project dependency.
+**macOS (Homebrew):**
+
+```bash
+brew install --cask copilot-cli
+```
+
+**Linux (npm; requires Node.js 22 or later):**
+
+```bash
+npm install -g @github/copilot
+```
+
+The npm installation also works on Windows and macOS with Node.js 22 or later. See the [Copilot CLI installation guide](https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/install-copilot-cli) for other options. On first use, run `copilot` and follow the `/login` instructions. The CLI is a global tool, not a project dependency.
 
 ### Setup
+
+The following commands work on Windows, macOS, and Linux:
+
 ```bash
 npm install
 npx playwright install chromium
 ```
 
+On supported Linux distributions, if Chromium's system libraries are missing, install them with `npx playwright install-deps chromium`. This may require administrator privileges.
+
 ### Execute Tests
+
+These commands are the same on all three platforms:
+
 ```bash
 # Run all tests
 npm test
@@ -120,7 +159,7 @@ You can also invoke `/spec-driven-playwright` in VS Code Copilot Chat. `npm test
 
 **Skill details:** [.github/skills/spec-driven-playwright/SKILL.md](.github/skills/spec-driven-playwright/SKILL.md). The separate `playwright-cli` skill provides browser commands.
 
-For generated or updated tests, the skill prohibits `.locator(...)` and uses Playwright's built-in locators, scoped chaining, filtering, and `within()`. If no reliable permitted locator exists, the agent reports a blocker instead of weakening the test. It preserves unchanged tests and reports existing violations.
+For generated or updated tests, the skill prohibits `.locator(...)` and uses Playwright's built-in locators, scoped chaining, filtering, and `within()`. If no reliable permitted locator exists, the agent reports a blocker instead of weakening the test. It reports existing locator violations without rewriting tests solely to change their locators.
 
 The agent saves manually captured exploration screenshots and other files under the git-ignored `.playwright-results/exploration/` directory.
 
@@ -144,6 +183,14 @@ test.use({
 After a `click` on the fixture's page, locators, or mouse, it waits for already-observed matching requests to finish, for at most one second. Timeouts are silent; failed requests and HTTP 4xx/5xx responses produce a warning but do not fail the test. Warnings omit URL query strings. Requests are not blocked or modified, and Playwright's normal assertions still verify the UI.
 
 This is best-effort synchronization: requests started later, direct API request-fixture calls, clicks through other page/frame objects, and other actions are not automatically synchronized. Assertions retain their normal behavior and do not wait for requests. It does not guarantee that the application has rendered the response. Use an appropriate Playwright assertion or explicit wait where a scenario needs a stronger guarantee. Path and operation allowlists apply to any non-Google host and are not a security boundary.
+
+## Try the agent
+
+The [Amazon Canada feature](src/business/features/amazon-ca/amazon-ca.feature) contains a commented-out `[AM-03]` currency-format scenario for trying the workflow:
+
+1. Uncomment the scenario and its steps.
+2. Run `npm run agentic-pw -- --sut amazon-ca`.
+3. Review the generated changes and test report. The agent reports failures rather than hiding application errors.
 
 ## 📖 How to Use
 

@@ -8,7 +8,7 @@ export class InventoryPage {
 
   constructor(private readonly page: Page) {
     this.title = page.getByTestId("title");
-    this.sortSelect = page.getByRole("combobox", { name: "Sort products" });
+    this.sortSelect = page.getByTestId("product-sort-container");
     this.items = page.getByTestId("inventory-item");
     this.cartLink = page.getByTestId("shopping-cart-link");
   }
@@ -19,14 +19,6 @@ export class InventoryPage {
         .getByTestId("inventory-item-name")
         .getByText(name, { exact: true }),
     });
-  }
-
-  itemName(item: Locator): Locator {
-    return item.getByTestId("inventory-item-name");
-  }
-
-  itemPrice(item: Locator): Locator {
-    return item.getByTestId("inventory-item-price");
   }
 
   async sortBy(option: string) {

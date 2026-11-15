@@ -7,8 +7,8 @@ export class LoginPage {
   readonly error: Locator;
 
   constructor(private readonly page: Page) {
-    this.username = page.getByRole("textbox", { name: "Username" });
-    this.password = page.getByRole("textbox", { name: "Password" });
+    this.username = page.getByPlaceholder("Username");
+    this.password = page.getByPlaceholder("Password");
     this.loginButton = page.getByRole("button", { name: "Login" });
     this.error = page.getByTestId("error");
   }
@@ -17,9 +17,22 @@ export class LoginPage {
     await this.page.goto("/");
   }
 
-  async login(username: string, password: string) {
+  async fillUsername(username: string) {
     await this.username.fill(username);
+  }
+
+  async fillPassword(password: string) {
     await this.password.fill(password);
+  }
+
+  async clickLogin() {
     await this.loginButton.click();
+  }
+
+  /** Precondition helper for scenarios that only need an authenticated user. */
+  async loginAs(username: string, password = "secret_sauce") {
+    await this.fillUsername(username);
+    await this.fillPassword(password);
+    await this.clickLogin();
   }
 }
