@@ -1,4 +1,5 @@
-import { test, expect, Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { test, expect } from '../fixtures/network';
 
 async function login(page: Page, username: string, password = 'secret_sauce') {
   await page.goto('/');

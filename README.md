@@ -115,6 +115,27 @@ You can also invoke `/spec-driven-playwright` in VS Code Copilot Chat. `npm test
 
 **Skill details:** [.github/skills/spec-driven-playwright/SKILL.md](.github/skills/spec-driven-playwright/SKILL.md). The separate `playwright-cli` skill provides browser commands.
 
+### Network synchronization
+
+Tests import `test` and `expect` from `tests/fixtures/network.ts` instead of directly from Playwright. Configure `API_ALLOWLIST` in that file to select browser fetch/XHR requests: REST paths match the exact URL pathname, and GraphQL operations match `operationName` in a GET query string or a JSON POST body. GraphQL endpoints are identified by `API_URL_PATTERNS.graphql`. The initial REST paths are `/api/orders` and `/api/cart`; the GraphQL allowlist is empty, so no GraphQL requests are monitored until names are added. The operation names in the fixture comment are examples only. Requests without an explicit `operationName` (even if the query itself is named), batched, malformed, and unlisted operations are ignored. Google APIs on `googleapis.com` are ignored.
+
+To override the allowlist for a test file or `describe` block, specify both lists:
+
+```ts
+test.use({
+  networkAllowlist: {
+    restPaths: ['/api/orders'],
+    graphqlOperations: ['GetOrders'],
+  },
+});
+```
+
+After a `click` on the fixture's page, locators, or mouse, it waits for already-observed matching requests to finish, for at most one second. Timeouts are silent; failed requests and HTTP 4xx/5xx responses produce a warning but do not fail the test. Warnings omit URL query strings. Requests are not blocked or modified, and Playwright's normal assertions still verify the UI.
+
+This is best-effort synchronization: requests started later, direct API request-fixture calls, clicks through other page/frame objects, and other actions are not automatically synchronized. Assertions retain their normal behavior and do not wait for requests. It does not guarantee that the application has rendered the response. Use an appropriate Playwright assertion or explicit wait where a scenario needs a stronger guarantee. Path and operation allowlists apply to any non-Google host and are not a security boundary.
+
+Run the fixture's isolated tests with `npm test -- --project=fixtures`.
+
 ## 📖 How to Use
 
 ### View Test Specifications

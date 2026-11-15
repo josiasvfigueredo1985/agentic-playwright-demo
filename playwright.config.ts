@@ -1,26 +1,41 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
-  testDir: './tests',
+  testDir: "./tests",
   fullyParallel: false,
   workers: 1,
-  reporter: [['html', { outputFolder: '.playwright-results/report', open: 'never' }], ['list']],
-  outputDir: '.playwright-results/artifacts',
+  reporter: [
+    ["html", { outputFolder: ".playwright-results/report", open: "never" }],
+    ["list"],
+  ],
+  outputDir: ".playwright-results/artifacts",
   use: {
-    browserName: 'chromium',
-    screenshot: 'only-on-failure',
-    trace: 'on-first-retry',
+    browserName: "chromium",
+    screenshot: "only-on-failure",
+    trace: "on-first-retry",
   },
   projects: [
     {
-      name: 'saucedemo',
-      testDir: './tests/saucedemo',
-      use: { baseURL: 'https://saucedemo.com', testIdAttribute: 'data-test' },
+      name: "fixtures",
+      testDir: "./tests/fixtures",
     },
     {
-      name: 'serverest',
-      testDir: './tests/serverest',
-      use: { baseURL: 'https://front.serverest.dev', testIdAttribute: 'data-testid' },
+      name: "saucedemo",
+      testDir: "./tests/saucedemo",
+      use: { baseURL: "https://saucedemo.com", testIdAttribute: "data-test" },
+    },
+    {
+      name: "serverest",
+      testDir: "./tests/serverest",
+      use: {
+        baseURL: "https://front.serverest.dev",
+        testIdAttribute: "data-testid",
+      },
+    },
+    {
+      name: "dominos",
+      testDir: "./tests/dominos",
+      use: { baseURL: "https://www.dominos.com.br/tabs/home" },
     },
   ],
   timeout: 30_000,
