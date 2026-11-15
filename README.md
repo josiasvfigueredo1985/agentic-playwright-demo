@@ -13,7 +13,7 @@ A **spec-driven Playwright testing approach** where agents explore applications 
   - [GitHub Actions](#github-actions)
 - [Agent Commands](#-agent-commands)
   - [Synchronize Tests with Features](#synchronize-tests-with-features)
-  - [Network synchronization](#network-synchronization)
+- [Network synchronization](#network-synchronization)
 - [Try the agent](#try-the-agent)
 - [How to Use](#-how-to-use)
 - [How to Regenerate Specs](#-how-to-regenerate-specs)
@@ -40,7 +40,7 @@ Project Structure
 │       └── scripts/               # Agent launcher and its tests
 ├── tests/
 │   ├── saucedemo/                 # Sauce Demo tests
-│   └── amazon-ca/                 # Amazon Canada tests
+│   └── automation-test-store/     # Automation Test Store tests
 ├── .playwright-results/           # Reports and artifacts (git-ignored)
 ├── .github/skills/                # Agent skill documentation
 └── playwright.config.ts           # Test configuration
@@ -54,7 +54,7 @@ Project Structure
 
 Generated and updated specs group scenarios under a feature-named `test.describe`, use `test.beforeEach` for genuinely shared navigation, keep scenario assertions explicit, and use page or component objects for UI-specific actions. The agent also checks existing scenarios for duplication and may refactor directly related tests while preserving their behavior.
 
-The included examples target Sauce Demo and Amazon Canada. To add another application, add a named project with its URL and test directory in `playwright.config.ts`, and put its features in `src/business/features/<project-name>/` and tests in the matching test directory. Project names used with `--sut` must contain only letters, digits, hyphens, or underscores and start with a letter or digit.
+The included examples target Sauce Demo and [Automation Test Store](https://automationteststore.com/). To add another application, add a named project with its URL and test directory in `playwright.config.ts`, and put its features in `src/business/features/<project-name>/` and tests in the matching test directory. Project names used with `--sut` must contain only letters, digits, hyphens, or underscores and start with a letter or digit.
 
 ## 🚀 How to Run
 
@@ -107,6 +107,7 @@ npm test
 
 # Run one SUT
 npm test -- --project=saucedemo
+npm test -- --project=automation-test-store
 
 # View HTML report
 npx playwright show-report .playwright-results/report
@@ -165,7 +166,13 @@ The agent saves manually captured exploration screenshots and other files under 
 
 For local maintenance, the skill requires evidence-based diagnosis and forbids weakening tests to hide application errors. It writes a per-run maintenance report under `.playwright-results/maintenance/` and preserves available Playwright evidence across reruns. This is agent guidance, not an automatic CI repair or a guarantee that every application error is detected. Traces and screenshots may contain sensitive data; review them before sharing.
 
-### Network synchronization
+## Network synchronization
+
+Modern applications often update the UI asynchronously after a user action. A test can move on while a request triggered by a click is still in flight, creating timing-dependent failures when the next action relies on its result. The shared network fixture provides a bounded, best-effort wait for selected requests, reducing some of these race conditions without adding a fixed sleep after every click.
+
+This can help when application initialization or data loading involves monitored requests, including in React applications. **It does not detect or wait for React hydration:** a page may look ready before its event handlers are attached, and a click can be ignored without starting a request. Network completion also does not mean that React has rendered the response. For hydration and rendering readiness, use an application-provided readiness signal where available and assert the relevant interactive UI state. Playwright's built-in actionability checks and auto-retrying assertions remain important.
+
+### Configuration
 
 Tests import `test` and `expect` from `@fixtures/network`, an alias for `src/framework/fixtures/network.ts`, instead of directly from Playwright. Configure `API_ALLOWLIST` in that file to select browser fetch/XHR requests: REST paths match the exact URL pathname, and GraphQL operations match `operationName` in a GET query string or a JSON POST body. GraphQL endpoints are identified by `API_URL_PATTERNS.graphql`. Both allowlists are empty by default, so no requests are monitored until entries are added. The operation names in the fixture comment are examples only. Requests without an explicit `operationName` (even if the query itself is named), batched, malformed, and unlisted operations are ignored. Google APIs on `googleapis.com` are ignored.
 
@@ -180,16 +187,18 @@ test.use({
 });
 ```
 
+### Behavior and limitations
+
 After a `click` on the fixture's page, locators, or mouse, it waits for already-observed matching requests to finish, for at most one second. Timeouts are silent; failed requests and HTTP 4xx/5xx responses produce a warning but do not fail the test. Warnings omit URL query strings. Requests are not blocked or modified, and Playwright's normal assertions still verify the UI.
 
 This is best-effort synchronization: requests started later, direct API request-fixture calls, clicks through other page/frame objects, and other actions are not automatically synchronized. Assertions retain their normal behavior and do not wait for requests. It does not guarantee that the application has rendered the response. Use an appropriate Playwright assertion or explicit wait where a scenario needs a stronger guarantee. Path and operation allowlists apply to any non-Google host and are not a security boundary.
 
 ## Try the agent
 
-The [Amazon Canada feature](src/business/features/amazon-ca/amazon-ca.feature) contains a commented-out `[AM-03]` currency-format scenario for trying the workflow:
+The [Automation Test Store feature](src/business/features/automation-test-store/automation-test-store.feature) contains a commented-out `[ATS-04]` cart-removal scenario for trying the workflow:
 
 1. Uncomment the scenario and its steps.
-2. Run `npm run agentic-pw -- --sut amazon-ca`.
+2. Run `npm run agentic-pw -- --sut automation-test-store`.
 3. Review the generated changes and test report. The agent reports failures rather than hiding application errors.
 
 ## 📖 How to Use
@@ -202,7 +211,7 @@ Open [src/business/features/saucedemo/saucedemo.feature](src/business/features/s
 - **Scenario 4:** Complete checkout flow
 
 ### View Generated Tests
-Open [src/business/features/amazon-ca/amazon-ca.feature](src/business/features/amazon-ca/amazon-ca.feature) for Amazon Canada's shopping cart scenarios. Matching tests are under `tests/amazon-ca/`.
+Open [src/business/features/automation-test-store/automation-test-store.feature](src/business/features/automation-test-store/automation-test-store.feature) for the store's shopping-cart and currency scenarios. Matching tests are under `tests/automation-test-store/`.
 
 ### Interpret Results
 ```bash

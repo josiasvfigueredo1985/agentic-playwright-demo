@@ -21,9 +21,9 @@ export default defineConfig({
       use: { baseURL: "https://saucedemo.com", testIdAttribute: "data-test" },
     },
     {
-      name: "amazon-ca",
-      testDir: "./tests/amazon-ca",
-      use: { baseURL: "https://www.amazon.ca" },
+      name: "automation-test-store",
+      testDir: "./tests/automation-test-store",
+      use: { baseURL: "https://automationteststore.com" },
     },
   ],
   timeout: 30_000,
