@@ -1,39 +1,43 @@
 # Agentic Playwright Demo
 
-A **spec-driven Playwright testing approach** where agents dynamically explore applications and generate test code without pre-built page objects.
+A **spec-driven Playwright testing approach** where agents explore applications and generate tests with page and component objects as needed.
 
 ## 🎯 Core Concept
 
-**Traditional Playwright** relies on static page objects that couple tests to UI structure. When the application changes, maintainers must manually update locators.
-
-**Agentic Approach** inverts this workflow:
+**Agentic approach:**
 - **Specs are source of truth** — BDD specifications define acceptance criteria
 - **Agent explores live** — Uses `playwright-cli` to interact with the real application
-- **Tests generated on-demand** — Agent creates test files from scratch, embedding discovered selectors
-- **No page objects** — The agent can rediscover locators when tests need updating
+- **Tests generated on-demand** — Agent implements scenarios using discovered locators
+- **Page and component objects** — Agent groups UI actions and locators by responsibility, extracting substantial or reusable components when useful
 
 ## 🏗️ Architecture
 
 ```
 Project Structure
-├── features/
-│   ├── saucedemo/                 # Sauce Demo acceptance criteria
-│   └── serverest/                 # ServeRest acceptance criteria
+├── src/
+│   ├── business/
+│   │   ├── features/<sut>/        # Acceptance criteria by application
+│   │   └── pages/<sut>/           # Page objects and components
+│   └── framework/
+│       ├── fixtures/              # Shared Playwright fixtures
+│       └── scripts/               # Agent launcher and its tests
 ├── tests/
 │   ├── saucedemo/                 # Sauce Demo tests
-│   └── serverest/                 # ServeRest tests
+│   └── amazon-ca/                 # Amazon Canada tests
 ├── .playwright-results/           # Reports and artifacts (git-ignored)
 ├── .github/skills/                # Agent skill documentation
 └── playwright.config.ts           # Test configuration
 ```
 
 **How it works:**
-1. Agent reads feature files under `features/` (Gherkin format)
+1. Agent reads feature files under `src/business/features/` (Gherkin format)
 2. Agent explores the application configured in `playwright.config.ts` using `playwright-cli`
 3. Agent generates Playwright tests with discovered locators
 4. Agent runs `npm test` and validates all pass
 
-The included examples target Sauce Demo and ServeRest. To add another application, add a named project with its URL and test directory in `playwright.config.ts`, and put its features in `features/<project-name>/` and tests in the matching test directory. Project names used with `--sut` must contain only letters, digits, hyphens, or underscores and start with a letter or digit.
+Generated and updated specs group scenarios under a feature-named `test.describe`, use `test.beforeEach` for genuinely shared navigation, keep scenario assertions explicit, and use page or component objects for UI-specific actions. Existing unchanged tests are not automatically refactored.
+
+The included examples target Sauce Demo and Amazon Canada. To add another application, add a named project with its URL and test directory in `playwright.config.ts`, and put its features in `src/business/features/<project-name>/` and tests in the matching test directory. Project names used with `--sut` must contain only letters, digits, hyphens, or underscores and start with a letter or digit.
 
 ## 🚀 How to Run
 
@@ -63,7 +67,7 @@ npx playwright install chromium
 npm test
 
 # Run one SUT
-npm test -- --project=serverest
+npm test -- --project=saucedemo
 
 # View HTML report
 npx playwright show-report .playwright-results/report
@@ -97,15 +101,16 @@ npm run agentic-pw
 To synchronize only one SUT:
 
 ```bash
-npm run agentic-pw -- --sut serverest
+npm run agentic-pw -- --sut saucedemo
 ```
 
-1. If there are no `.feature` files under the selected SUT (or under `features/` when running all), the command warns and stops.
+1. If there are no `.feature` files under the selected SUT (or under `src/business/features/` when running all), the command warns and stops.
 2. Otherwise, it starts Copilot, which matches each selected feature directory to a Playwright project and its test directory.
-3. If no tests exist, Copilot generates them. It adds missing scenarios and updates existing tests whose steps or data differ, preserving unrelated tests.
-4. Copilot runs the selected project tests (or all tests) and reports the outcome; the command then independently runs the same tests again.
+3. Copilot creates missing test directories. When projects share an empty or nonexistent test directory, it configures separate `tests/<sut>/` directories for the selected projects. It stops if shared existing tests cannot be attributed safely, or if a project or target URL is missing.
+4. If no tests exist, Copilot generates them. It adds missing scenarios and updates existing tests whose steps or data differ, preserving unrelated tests.
+5. Copilot runs the selected project tests (or all tests) and reports the outcome; the command then independently runs the same tests again.
 
-The command runs Copilot non-interactively, even when tests already exist, so it can check changed steps and data. This may use AI credits. If requirements are unclear, Copilot cannot complete, or tests fail, the command exits unsuccessfully instead of waiting for input. Review the agent-generated changes.
+The command runs Copilot non-interactively, even when tests already exist, so it can check changed steps and data. This may use AI credits. The agent explores the application to resolve unspecified implementation details, but stops rather than inventing genuinely ambiguous expected behavior. If Copilot cannot complete or tests fail, the command exits unsuccessfully instead of waiting for input. Review the agent-generated changes.
 
 **Security:** This command automatically approves all Copilot tools and URLs; shell commands can access more than the workspace. Run it only on trusted code in an isolated environment with minimal credentials. The command removes `COPILOT_GITHUB_TOKEN`, `GH_TOKEN`, and `GITHUB_TOKEN` from Copilot's shell and MCP tool environments, but other secrets may still be accessible. Organization policy can still deny actions.
 
@@ -115,9 +120,15 @@ You can also invoke `/spec-driven-playwright` in VS Code Copilot Chat. `npm test
 
 **Skill details:** [.github/skills/spec-driven-playwright/SKILL.md](.github/skills/spec-driven-playwright/SKILL.md). The separate `playwright-cli` skill provides browser commands.
 
+For generated or updated tests, the skill prohibits `.locator(...)` and uses Playwright's built-in locators, scoped chaining, filtering, and `within()`. If no reliable permitted locator exists, the agent reports a blocker instead of weakening the test. It preserves unchanged tests and reports existing violations.
+
+The agent saves manually captured exploration screenshots and other files under the git-ignored `.playwright-results/exploration/` directory.
+
+For local maintenance, the skill requires evidence-based diagnosis and forbids weakening tests to hide application errors. It writes a per-run maintenance report under `.playwright-results/maintenance/` and preserves available Playwright evidence across reruns. This is agent guidance, not an automatic CI repair or a guarantee that every application error is detected. Traces and screenshots may contain sensitive data; review them before sharing.
+
 ### Network synchronization
 
-Tests import `test` and `expect` from `tests/fixtures/network.ts` instead of directly from Playwright. Configure `API_ALLOWLIST` in that file to select browser fetch/XHR requests: REST paths match the exact URL pathname, and GraphQL operations match `operationName` in a GET query string or a JSON POST body. GraphQL endpoints are identified by `API_URL_PATTERNS.graphql`. The initial REST paths are `/api/orders` and `/api/cart`; the GraphQL allowlist is empty, so no GraphQL requests are monitored until names are added. The operation names in the fixture comment are examples only. Requests without an explicit `operationName` (even if the query itself is named), batched, malformed, and unlisted operations are ignored. Google APIs on `googleapis.com` are ignored.
+Tests import `test` and `expect` from `@fixtures/network`, an alias for `src/framework/fixtures/network.ts`, instead of directly from Playwright. Configure `API_ALLOWLIST` in that file to select browser fetch/XHR requests: REST paths match the exact URL pathname, and GraphQL operations match `operationName` in a GET query string or a JSON POST body. GraphQL endpoints are identified by `API_URL_PATTERNS.graphql`. Both allowlists are empty by default, so no requests are monitored until entries are added. The operation names in the fixture comment are examples only. Requests without an explicit `operationName` (even if the query itself is named), batched, malformed, and unlisted operations are ignored. Google APIs on `googleapis.com` are ignored.
 
 To override the allowlist for a test file or `describe` block, specify both lists:
 
@@ -134,19 +145,17 @@ After a `click` on the fixture's page, locators, or mouse, it waits for already-
 
 This is best-effort synchronization: requests started later, direct API request-fixture calls, clicks through other page/frame objects, and other actions are not automatically synchronized. Assertions retain their normal behavior and do not wait for requests. It does not guarantee that the application has rendered the response. Use an appropriate Playwright assertion or explicit wait where a scenario needs a stronger guarantee. Path and operation allowlists apply to any non-Google host and are not a security boundary.
 
-Run the fixture's isolated tests with `npm test -- --project=fixtures`.
-
 ## 📖 How to Use
 
 ### View Test Specifications
-Open [features/saucedemo/saucedemo.feature](features/saucedemo/saucedemo.feature) to see the 4 Sauce Demo scenarios:
+Open [src/business/features/saucedemo/saucedemo.feature](src/business/features/saucedemo/saucedemo.feature) to see the 4 Sauce Demo scenarios:
 - **Scenario 1:** Valid login with standard credentials
 - **Scenario 2:** Locked-out user cannot login
 - **Scenario 3:** Sort products by price
 - **Scenario 4:** Complete checkout flow
 
 ### View Generated Tests
-Open [features/serverest/registration.feature](features/serverest/registration.feature) for ServeRest's registration and login scenario. The agent generates matching tests under `tests/serverest/`.
+Open [src/business/features/amazon-ca/amazon-ca.feature](src/business/features/amazon-ca/amazon-ca.feature) for Amazon Canada's shopping cart scenarios. Matching tests are under `tests/amazon-ca/`.
 
 ### Interpret Results
 ```bash
@@ -160,7 +169,7 @@ Tests run against the live configured applications. Results include:
 
 ## 🔄 How to Regenerate Specs
 
-Use this workflow when `features/saucedemo/saucedemo.feature` is missing or needs to be recreated from scratch.
+Use this workflow when `src/business/features/saucedemo/saucedemo.feature` is missing or needs to be recreated from scratch.
 
 ### Step 1: Identify Test Scenarios
 
@@ -172,7 +181,7 @@ Explore the application and document key user workflows. For Sauce Demo, identif
 
 ### Step 2: Create Spec File in Gherkin Format
 
-Create `features/saucedemo/saucedemo.feature` with the following structure:
+Create `src/business/features/saucedemo/saucedemo.feature` with the following structure:
 
 ```gherkin
 Feature: Application Name
@@ -256,7 +265,7 @@ Scenario: [SL-04] Complete end-to-end checkout flow
 
 ### Step 4: Save Spec File
 
-Save the file as `features/saucedemo/saucedemo.feature` (must use `.feature` extension for Gherkin format).
+Save the file as `src/business/features/saucedemo/saucedemo.feature` (must use `.feature` extension for Gherkin format).
 
 ### Step 5: Ask the Agent to Generate Tests
 
@@ -270,13 +279,13 @@ npm test
 
 If tests fail, run `npm run agentic-pw` to ask the agent to investigate and revalidate them.
 
-**Result:** `features/saucedemo/saucedemo.feature` is the source of truth for the agent-generated tests. Review the agent's changes and test results.
+**Result:** `src/business/features/saucedemo/saucedemo.feature` is the source of truth for the agent-generated tests. Review the agent's changes and test results.
 
 ## ➕ How to Add More Tests
 
 ### 1. Add Scenario to Spec File
 
-Edit [features/saucedemo/saucedemo.feature](features/saucedemo/saucedemo.feature) and add a new Gherkin scenario:
+Edit [src/business/features/saucedemo/saucedemo.feature](src/business/features/saucedemo/saucedemo.feature) and add a new Gherkin scenario:
 
 ```gherkin
 Scenario: [SL-05] Your new test scenario
@@ -317,6 +326,6 @@ Scenario: [SL-05] User can logout
 
 3. **Verify:** `npm test` should pass
 
-**Key principle:** Specs define *what* to test; agent implements *how* by exploring the live UI. No manual page-object maintenance.
+**Key principle:** Specs define *what* to test; the agent explores the live UI and maintains page and component objects for *how*.
 
 

@@ -16,26 +16,14 @@ export default defineConfig({
   },
   projects: [
     {
-      name: "fixtures",
-      testDir: "./tests/fixtures",
-    },
-    {
       name: "saucedemo",
       testDir: "./tests/saucedemo",
       use: { baseURL: "https://saucedemo.com", testIdAttribute: "data-test" },
     },
     {
-      name: "serverest",
-      testDir: "./tests/serverest",
-      use: {
-        baseURL: "https://front.serverest.dev",
-        testIdAttribute: "data-testid",
-      },
-    },
-    {
-      name: "dominos",
-      testDir: "./tests/dominos",
-      use: { baseURL: "https://www.dominos.com.br/tabs/home" },
+      name: "amazon-ca",
+      testDir: "./tests/amazon-ca",
+      use: { baseURL: "https://www.amazon.ca" },
     },
   ],
   timeout: 30_000,

@@ -3,7 +3,8 @@ const { mkdtempSync, readFileSync, readdirSync, rmSync } = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
-const root = path.resolve(__dirname, '..');
+const root = path.resolve(__dirname, '..', '..', '..');
+const featuresRoot = path.join(root, 'src', 'business', 'features');
 
 function findFeatures(directory, isRoot = true) {
   let entries;
@@ -20,7 +21,7 @@ function findFeatures(directory, isRoot = true) {
   });
 }
 
-function main(run = spawnSync, featureDirectory = path.join(root, 'features'), args = []) {
+function main(run = spawnSync, featureDirectory = featuresRoot, args = []) {
   if (args.length && (args.length !== 2 || args[0] !== '--sut' || !/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(args[1]))) {
     throw new Error('Usage: npm run agentic-pw -- [--sut <project-name>]');
   }
@@ -28,7 +29,7 @@ function main(run = spawnSync, featureDirectory = path.join(root, 'features'), a
   const selectedFeatures = sut ? path.join(featureDirectory, sut) : featureDirectory;
   const features = findFeatures(selectedFeatures);
   if (!features.length) {
-    console.error(`No .feature files found under ${sut ? `features/${sut}/` : 'features/'}. Add a feature file before running agentic-pw.`);
+    console.error(`No .feature files found under ${sut ? `src/business/features/${sut}/` : 'src/business/features/'}. Add a feature file before running agentic-pw.`);
     return 1;
   }
 
@@ -39,12 +40,13 @@ function main(run = spawnSync, featureDirectory = path.join(root, 'features'), a
     console.log(`Found ${features.length} feature file(s). Starting Copilot in unattended mode.`);
     const prompt = [
       sut
-        ? `Use the /spec-driven-playwright skill to synchronize only SUT "${sut}": features/${sut}/ and the matching Playwright project and tests. Do not modify or run tests for other SUTs.`
+        ? `Use the /spec-driven-playwright skill to synchronize only SUT "${sut}": src/business/features/${sut}/ and the matching Playwright project and tests. Do not modify or run tests for other SUTs.`
         : 'Use the /spec-driven-playwright skill to synchronize all SUTs and their matching Playwright projects.',
-      'This run is unattended. Do not ask questions or guess missing requirements.',
+      'Create missing test directories for the selected SUTs. If projects share an empty or nonexistent test directory, configure separate tests/<sut>/ directories for the selected projects; preserve existing tests, project URLs, and other settings.',
+      'This run is unattended. Explore the application to resolve implementation details such as locators, selectable items, and observable assertions; do not ask questions or invent missing requirements.',
       `Only after the entire task is complete and ${testCommand} passes, write exactly success to this completion file:`,
       JSON.stringify(completionFile),
-      'If anything is unclear or fails, explain the problem and do not write the completion file.',
+      'If an expected behavior remains genuinely ambiguous after relevant exploration, or validation fails, explain the problem and do not write the completion file.',
     ].join('\n');
     const result = run(process.platform === 'win32' ? 'copilot.exe' : 'copilot', [
       '--trust-folder',
@@ -84,7 +86,7 @@ function main(run = spawnSync, featureDirectory = path.join(root, 'features'), a
 
 if (require.main === module) {
   try {
-    process.exitCode = main(spawnSync, path.join(root, 'features'), process.argv.slice(2));
+    process.exitCode = main(spawnSync, featuresRoot, process.argv.slice(2));
   } catch (error) {
     console.error(`Unable to run agentic-pw: ${error.message}`);
     process.exitCode = 1;

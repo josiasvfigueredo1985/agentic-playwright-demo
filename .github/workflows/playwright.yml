@@ -35,7 +35,7 @@ jobs:
         run: npx --no-install playwright install --with-deps chromium
 
       - name: Test agent launcher
-        run: node --test scripts/agentic-pw.test.cjs
+        run: node --test src/framework/scripts/agentic-pw.test.cjs
 
       - name: Run Playwright tests
         run: npm test -- --reporter=blob,list --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}

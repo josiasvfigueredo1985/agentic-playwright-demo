@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "playwright test",
-    "agentic-pw": "node scripts/agentic-pw.cjs"
+    "agentic-pw": "node src/framework/scripts/agentic-pw.cjs"
   },
   "keywords": [],
   "author": "",
@@ -12,6 +12,7 @@
   "description": "",
   "devDependencies": {
     "@playwright/test": "^1.65.0",
-    "@types/node": "^26.6.6"
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
   }
 }

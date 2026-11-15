@@ -3,9 +3,20 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "types": ["node"],
+    "paths": {
+      "@fixtures/*": [
+        "./src/framework/fixtures/*"
+      ]
+    },
+    "types": [
+      "node"
+    ],
     "strict": true,
     "noEmit": true
   },
-  "include": ["playwright.config.ts", "tests/**/*.ts"]
+  "include": [
+    "playwright.config.ts",
+    "src/**/*.ts",
+    "tests/**/*.ts"
+  ]
 }

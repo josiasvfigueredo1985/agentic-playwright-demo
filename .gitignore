@@ -3,6 +3,10 @@ node_modules/
 dist/
 build/
 
+# Local environment variables
+.env
+.env.local
+
 # Test execution results
 test-results/
 .playwright-results/

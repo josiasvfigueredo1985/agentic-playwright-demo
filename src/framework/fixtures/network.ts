@@ -29,7 +29,7 @@ type NetworkAllowlist = {
  * }
  */
 const API_ALLOWLIST: NetworkAllowlist = {
-  restPaths: ["/api/orders", "/api/cart"],
+  restPaths: [],
   graphqlOperations: [], // Examples: "GetOrders", "CreateOrder"
 };
 
@@ -89,12 +89,17 @@ function matches(request: Request, allowlist: NetworkAllowlist): boolean {
     return false;
 
   const url = new URL(request.url());
-  if (url.hostname === "googleapis.com" || url.hostname.endsWith(".googleapis.com"))
+  if (
+    url.hostname === "googleapis.com" ||
+    url.hostname.endsWith(".googleapis.com")
+  )
     return false;
 
   if (API_URL_PATTERNS.graphql.some((pattern) => pattern.test(url.pathname))) {
     const operation = graphqlOperation(request, url);
-    return operation !== null && allowlist.graphqlOperations.includes(operation);
+    return (
+      operation !== null && allowlist.graphqlOperations.includes(operation)
+    );
   }
   return allowlist.restPaths.includes(url.pathname);
 }
@@ -112,7 +117,7 @@ function safeUrl(request: Request): string {
  * Requests starting later and clicks through other page objects are not covered.
  *
  * @example
- * import { test, expect } from "../fixtures/network";
+ * import { test, expect } from "@fixtures/network";
  * test("loads orders", async ({ page }) => {
  *   await page.getByRole("button", { name: "Load orders" }).click();
  *   await expect(page.getByText("Orders")).toBeVisible();
@@ -121,7 +126,10 @@ function safeUrl(request: Request): string {
 export const test = base.extend<{ networkAllowlist: NetworkAllowlist }>({
   networkAllowlist: [API_ALLOWLIST, { option: true }],
   page: async ({ page, context, networkAllowlist }, use) => {
-    const pending = new Map<Request, { done: Promise<void>; finish: () => void }>();
+    const pending = new Map<
+      Request,
+      { done: Promise<void>; finish: () => void }
+    >();
     const monitored = new WeakSet<Request>();
 
     const onRequest = (request: Request) => {
@@ -148,7 +156,11 @@ export const test = base.extend<{ networkAllowlist: NetworkAllowlist }>({
     };
     const onResponse = (response: Response) => {
       const request = response.request();
-      if (monitored.has(request) && response.status() >= 400 && response.status() < 600) {
+      if (
+        monitored.has(request) &&
+        response.status() >= 400 &&
+        response.status() < 600
+      ) {
         console.warn(
           `[network] HTTP ${response.status()}: ${safeUrl(request)}`,
         );
