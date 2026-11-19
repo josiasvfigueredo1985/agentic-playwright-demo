@@ -1,5 +1,6 @@
 import type { BrowserContext, Request, Response } from "@playwright/test";
-import { GRAPHQL_PATH, isMonitoredRequest, safeRequestUrl } from "./network-requests";
+import {  isMonitoredRequest, safeRequestUrl } from "./network-requests";
+import { GRAPHQL_PATH } from "./network-config";
 
 export type NetworkErrorAllowlist = {
   restPaths: readonly string[];

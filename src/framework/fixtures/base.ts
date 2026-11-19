@@ -1,12 +1,12 @@
 import { expect, mergeTests } from "@playwright/test";
 import { test as networkTest } from "./network";
-import { test as uiTest, type UiGuardOptions } from "./ui";
-import type { NetworkGuardOptions } from "../utils/network-config";
+import { test as uiTest } from "./ui";
+import { RESPONSE_WAIT_TIMEOUT_MS, type NetworkGuardOptions } from "../utils/network-config";
+import type { UiGuardOptions } from "../utils/ui-errors-config";
 
 export { expect };
 export type GuardOptions = NetworkGuardOptions & UiGuardOptions;
 
-const WAIT_TIMEOUT_MS = 1_000;
 const locatorFactories = new Set([
   "locator", "getByAltText", "getByLabel", "getByPlaceholder", "getByRole",
   "getByTestId", "getByText", "getByTitle", "filter", "first", "last", "nth",
@@ -46,7 +46,7 @@ export const test = mergeTests(networkTest, uiTest).extend({
             return async (...args: unknown[]) => {
               await checkErrors();
               const result = await Reflect.apply(value, target, args);
-              await responseWait.wait(WAIT_TIMEOUT_MS, responseErrors.failureSignal);
+              await responseWait.wait(RESPONSE_WAIT_TIMEOUT_MS, responseErrors.failureSignal);
               await checkErrors();
               return result;
             };

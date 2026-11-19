@@ -1,4 +1,4 @@
-import { test, expect } from "@fixtures/network";
+import { test, expect } from "@fixtures/base";
 import { CheckoutPage } from "../../src/business/pages/saucedemo/checkout.page";
 import { InventoryPage } from "../../src/business/pages/saucedemo/inventory.page";
 import { LoginPage } from "../../src/business/pages/saucedemo/login.page";

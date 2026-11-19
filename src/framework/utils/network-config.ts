@@ -2,6 +2,8 @@ import type { NetworkErrorAllowlist } from "./response-error-guard";
 
 export const GRAPHQL_PATH = /\/graphql(?:\/|$)/i;
 
+/** Maximum wait in milliseconds for monitored requests after a click. */
+export const RESPONSE_WAIT_TIMEOUT_MS = 1_000;
 
 export type NetworkGuardOptions = {
   restApiEndpoints: readonly string[];
@@ -25,7 +27,7 @@ export type NetworkGuardOptions = {
  * }
  */
 export const NETWORK_CONFIG: NetworkGuardOptions = {
-  restApiEndpoints: [],
+  restApiEndpoints: ["https://automationteststore.com/index.php"],
   monitorGraphql: false,
   networkErrorAllowlist: {
     restPaths: [],

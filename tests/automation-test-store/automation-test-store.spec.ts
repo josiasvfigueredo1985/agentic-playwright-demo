@@ -1,4 +1,4 @@
-import { test, expect } from "@fixtures/network";
+import { test, expect } from "@fixtures/base";
 import { CartPage } from "../../src/business/pages/automation-test-store/cart.page";
 import { ProductPage } from "../../src/business/pages/automation-test-store/product.page";
 import { SearchResultsPage } from "../../src/business/pages/automation-test-store/search-results.page";
