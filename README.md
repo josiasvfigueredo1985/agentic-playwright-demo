@@ -22,9 +22,9 @@ A **spec-driven Playwright testing approach** where agents explore applications 
 ## 🎯 Core Concept
 
 **Agentic approach:**
-- **Specs are source of truth** — BDD specifications define acceptance criteria
+- **QA owns the test intent** — QA authors and maintains BDD scenarios and their expected behavior
 - **Agent explores live** — Uses `playwright-cli` to interact with the real application
-- **Tests generated on-demand** — Agent implements scenarios using discovered locators
+- **Agent implements and runs tests** — It creates or updates the Playwright code for the QA-defined scenarios, then validates the tests; it does not invent or change expected behavior
 - **Page and component objects** — Agent groups UI actions and locators by responsibility, extracting substantial or reusable components when useful
 
 ## 🏗️ Architecture
@@ -37,6 +37,7 @@ Project Structure
 │   │   └── pages/<sut>/           # Page objects and components
 │   └── framework/
 │       ├── fixtures/              # Shared Playwright fixtures
+│       ├── utils/                 # Response-wait, response-error and UI-error guards
 │       └── scripts/               # Agent launcher and its tests
 ├── tests/
 │   ├── saucedemo/                 # Sauce Demo tests
@@ -47,10 +48,10 @@ Project Structure
 ```
 
 **How it works:**
-1. Agent reads feature files under `src/business/features/` (Gherkin format)
-2. Agent explores the application configured in `playwright.config.ts` using `playwright-cli`
-3. Agent generates Playwright tests with discovered locators
-4. Agent runs `npm test` and validates all pass
+1. QA authors the expected behavior in feature files under `src/business/features/` (Gherkin format)
+2. Agent reads those requirements and explores the application configured in `playwright.config.ts` using `playwright-cli` to resolve implementation details
+3. Agent creates or updates the matching Playwright test code and page/component objects without changing the feature scenarios or expected behavior
+4. Agent runs the tests; the launcher independently runs them again to verify the result
 
 Generated and updated specs group scenarios under a feature-named `test.describe`, use `test.beforeEach` for genuinely shared navigation, keep scenario assertions explicit, and use page or component objects for UI-specific actions. The agent also checks existing scenarios for duplication and may refactor directly related tests while preserving their behavior.
 
@@ -131,7 +132,7 @@ GitHub Pages reports may be publicly accessible and can contain test data or scr
 
 ### Synchronize Tests with Features
 
-**Purpose:** Ask Copilot to create missing tests and update existing tests when feature steps or data change. It compares test behavior with the feature, not just scenario IDs.
+**Purpose:** Ask Copilot to implement missing Playwright tests and update existing test code when QA-authored feature steps or data change. The feature scenarios define what to test; Copilot handles implementation and execution, not test-intent authoring.
 
 **Command (PowerShell or other terminal):**
 ```bash
@@ -147,10 +148,10 @@ npm run agentic-pw -- --sut saucedemo
 1. If there are no `.feature` files under the selected SUT (or under `src/business/features/` when running all), the command warns and stops.
 2. Otherwise, it starts Copilot, which matches each selected feature directory to a Playwright project and its test directory.
 3. Copilot creates missing test directories. When projects share an empty or nonexistent test directory, it configures separate `tests/<sut>/` directories for the selected projects. It stops if shared existing tests cannot be attributed safely, or if a project or target URL is missing.
-4. If no tests exist, Copilot generates them. It adds missing scenarios and updates existing tests whose steps or data differ, preserving unrelated tests.
+4. If no tests exist, Copilot implements tests for the scenarios in the feature files. It adds missing scenario tests to the Playwright specs and updates existing test code whose steps or data differ, preserving unrelated tests and leaving feature files unchanged.
 5. Copilot runs the selected project tests (or all tests) and reports the outcome; the command then independently runs the same tests again.
 
-The command runs Copilot non-interactively, even when tests already exist, so it can check changed steps and data. This may use AI credits. The agent explores the application to resolve unspecified implementation details, but stops rather than inventing genuinely ambiguous expected behavior. If Copilot cannot complete or tests fail, the command exits unsuccessfully instead of waiting for input. Review the agent-generated changes.
+The command runs Copilot non-interactively, even when tests already exist, so it can check changed steps and data. This may use AI credits. QA owns the feature scenarios and expected behavior; the agent explores the application only to resolve implementation details such as locators. It must not add or change feature scenarios or invent expected behavior. If a requirement is genuinely ambiguous, or Copilot cannot complete or tests fail, the command exits unsuccessfully instead of waiting for input. Review the agent-generated changes.
 
 **Security:** This command automatically approves all Copilot tools and URLs; shell commands can access more than the workspace. Run it only on trusted code in an isolated environment with minimal credentials. The command removes `COPILOT_GITHUB_TOKEN`, `GH_TOKEN`, and `GITHUB_TOKEN` from Copilot's shell and MCP tool environments, but other secrets may still be accessible. Organization policy can still deny actions.
 
@@ -168,30 +169,57 @@ For local maintenance, the skill requires evidence-based diagnosis and forbids w
 
 ## Network synchronization
 
-Modern applications often update the UI asynchronously after a user action. A test can move on while a request triggered by a click is still in flight, creating timing-dependent failures when the next action relies on its result. The shared network fixture provides a bounded, best-effort wait for selected requests, reducing some of these race conditions without adding a fixed sleep after every click.
+Modern applications often update the UI asynchronously after a user action. A test can move on while a request triggered by a click is still in flight, creating timing-dependent failures when the next action relies on its result. The shared fixture monitors selected REST and detected GraphQL browser fetch/XHR traffic and provides a bounded, best-effort wait after clicks without adding a fixed sleep after every click.
 
 This can help when application initialization or data loading involves monitored requests, including in React applications. **It does not detect or wait for React hydration:** a page may look ready before its event handlers are attached, and a click can be ignored without starting a request. Network completion also does not mean that React has rendered the response. For hydration and rendering readiness, use an application-provided readiness signal where available and assert the relevant interactive UI state. Playwright's built-in actionability checks and auto-retrying assertions remain important.
 
 ### Configuration
 
-Tests import `test` and `expect` from `@fixtures/network`, an alias for `src/framework/fixtures/network.ts`, instead of directly from Playwright. Configure `API_ALLOWLIST` in that file to select browser fetch/XHR requests: REST paths match the exact URL pathname, and GraphQL operations match `operationName` in a GET query string or a JSON POST body. GraphQL endpoints are identified by `API_URL_PATTERNS.graphql`. Both allowlists are empty by default, so no requests are monitored until entries are added. The operation names in the fixture comment are examples only. Requests without an explicit `operationName` (even if the query itself is named), batched, malformed, and unlisted operations are ignored. Google APIs on `googleapis.com` are ignored.
+Tests import `test` and `expect` from `@fixtures/base`, an alias for `src/framework/fixtures/base.ts`, instead of directly from Playwright. The base fixture combines the network and UI fixtures and coordinates the response-wait, response-error, and UI-error guards in `src/framework/utils/`. Both network guards use the same filters for browser fetch/XHR traffic. Requests to `googleapis.com` and its subdomains remain excluded.
 
-To override the allowlist for a test file or `describe` block, specify both lists:
+Configure shared defaults in `NETWORK_CONFIG` in `src/framework/utils/network-config.ts`. Set `restApiEndpoints` to absolute HTTP(S) base URLs for the application's REST APIs. A URL matches its origin and exact pathname or descendants at a path boundary: `https://api.example.com/api` matches `/api/orders`, not `/apix`. Use `https://api.example.com/` only if all fetch/XHR traffic on that origin is API traffic. Queries, fragments, and credentials are not allowed in the configured endpoint. Set `monitorGraphql: true` to monitor requests with a `/graphql` path segment on any non-excluded origin. GraphQL is excluded when this option is false, even if a REST endpoint matches. By default the REST endpoint list is empty and GraphQL monitoring is disabled, so neither network guard monitors requests until configured.
+
+The `networkErrorAllowlist` option lists expected errors, not requests to monitor: REST entries match exact URL pathnames, and GraphQL entries match explicit `operationName` values in a GET query string or JSON POST body. An entry allows all error statuses and network failures for that path or operation on any monitored host, so keep exceptions as narrow as possible. Both error lists are empty by default.
+
+GraphQL responses with a non-empty `errors` array fail even when the HTTP status is 200. For JSON batches, response errors are matched to request operations by position; an unidentifiable or unmatched operation is not exempted. A malformed GraphQL JSON response fails rather than silently hiding an error.
+
+Override the shared defaults for a test file or `describe` block when an application or scenario needs different settings:
 
 ```ts
 test.use({
-  networkAllowlist: {
+  restApiEndpoints: ['https://api.example.com/api'],
+  monitorGraphql: true,
+  networkErrorAllowlist: {
     restPaths: ['/api/orders'],
     graphqlOperations: ['GetOrders'],
   },
 });
 ```
 
+These options can also be set in a Playwright project's `use` configuration. To type-check them in `playwright.config.ts`, import `GuardOptions` as a type from `src/framework/fixtures/base` and use `defineConfig<GuardOptions>(...)`.
+
 ### Behavior and limitations
 
-After a `click` on the fixture's page, locators, or mouse, it waits for already-observed matching requests to finish, for at most one second. Timeouts are silent; failed requests and HTTP 4xx/5xx responses produce a warning but do not fail the test. Warnings omit URL query strings. Requests are not blocked or modified, and Playwright's normal assertions still verify the UI.
+After a `click` on the fixture's page, locators, or mouse, it waits for already-observed monitored API requests to finish, for at most one second. A timeout is silent and the test proceeds; a successful response proceeds normally. An unexpected monitored HTTP 4xx/5xx response, GraphQL error, or failed request fails the test, including the HTTP status and response body where available. URLs in failures omit query strings. Requests are not blocked or modified, and Playwright's normal assertions still verify the UI.
 
-This is best-effort synchronization: requests started later, direct API request-fixture calls, clicks through other page/frame objects, and other actions are not automatically synchronized. Assertions retain their normal behavior and do not wait for requests. It does not guarantee that the application has rendered the response. Use an appropriate Playwright assertion or explicit wait where a scenario needs a stronger guarantee. Path and operation allowlists apply to any non-Google host and are not a security boundary.
+Errors observed during the bounded wait fail the click. An error arriving after a timeout, or outside a wrapped click, fails the next wrapped click or fixture teardown if it arrives before monitoring ends; asynchronous events cannot interrupt arbitrary test code immediately. Requests that have not completed by teardown do not extend the test. Requests started later, direct API request-fixture calls, clicks through other page/frame objects, and other actions are not automatically waited for. Assertions retain their normal behavior and do not wait for requests. Network completion does not guarantee that the application has rendered the response. Use an appropriate Playwright assertion or explicit wait where a scenario needs a stronger guarantee.
+
+### UI error guard
+
+The UI guard observes DOM changes on the fixture page and its frames for visible elements matching `[role='alert']` by default. It records non-empty alert text, including alerts removed before teardown, and fails the next guarded click or fixture teardown unless the exact trimmed message is explicitly allowed. Global defaults are in `UI_CONFIG` in `src/framework/fixtures/ui.ts`. The Sauce Demo locked-out message is globally allowed, so it will not fail any test when displayed; remove it from the global list if it should be detected outside that negative scenario. The negative scenario still asserts the message.
+
+To cover application-specific error elements or override expected messages, configure the test or its `describe` block:
+
+```ts
+test.use({
+  uiErrorSelectors: ["[role='alert']", ".error-message"],
+  uiErrorAllowlist: ["Expected validation error"],
+});
+```
+
+Selectors are CSS selectors and replace the default list; an empty list disables detection. The test-specific allowlist also replaces the global list. Use exceptions only for expected messages, and assert those messages in the scenario. The guard observes DOM mutations and checks at guarded clicks and teardown; it cannot detect every visual error, messages rendered without a matching selector, alerts added and removed before the observer runs, or messages appearing after teardown. It does not replace scenario assertions or human review.
+
+**Sensitive data:** Unexpected response bodies and UI messages are included in test failure output and reports and may contain credentials, personal information, or other sensitive data. Use synthetic data, restrict report access, and review artifacts before sharing. Path and operation allowlists are not a security boundary.
 
 ## Try the agent
 
