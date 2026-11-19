@@ -15,8 +15,8 @@ const locatorFactories = new Set([
 
 /** Composes network and UI guards around the Playwright page fixture. */
 export const test = mergeTests(networkTest, uiTest).extend({
-  page: async ({ page, createNetworkGuards, createUiErrorGuard }, use) => {
-    const { responseWait, responseErrors } = createNetworkGuards();
+  page: async ({ page, networkGuards, createUiErrorGuard }, use) => {
+    const { responseWait, responseErrors } = networkGuards;
     const uiErrors = createUiErrorGuard(page);
     let uiStarted = false;
 
@@ -60,8 +60,6 @@ export const test = mergeTests(networkTest, uiTest).extend({
       uiStarted = true;
       await use(wrapTarget(page));
     } finally {
-      responseWait.dispose();
-      await responseErrors.dispose();
       await checkErrors();
     }
   },

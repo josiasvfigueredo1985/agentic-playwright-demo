@@ -198,6 +198,29 @@ test.use({
 
 These options can also be set in a Playwright project's `use` configuration. To type-check them in `playwright.config.ts`, import `GuardOptions` as a type from `src/framework/fixtures/base` and use `defineConfig<GuardOptions>(...)`.
 
+### Mocking an expected API error
+
+Use the `ignoreNetworkErrors` fixture just before the step that triggers the request. Set up the mock separately with Playwright, and keep the assertion for the expected UI behavior:
+
+```ts
+test("shows retry guidance when the orders API fails", async ({ page, ignoreNetworkErrors }) => {
+  // Configure https://api.example.com/api in restApiEndpoints first.
+  await page.goto("/orders");
+  await page.route("https://api.example.com/api/orders", (route) =>
+    route.fulfill({ status: 503, json: { error: "Orders unavailable" } }),
+    { times: 1 },
+  );
+
+  ignoreNetworkErrors({ restPath: "/api/orders", status: 503 });
+  await page.getByRole("button", { name: "Load orders" }).click();
+  await expect(page.getByText("Try again later")).toBeVisible();
+});
+```
+
+For query-based routes, narrow the match with `query`, for example `{ restPath: "/index.php", query: { rt: "r/product/product/addToCart" }, status: 503 }`. With GraphQL monitoring enabled, use `{ graphqlOperation: "CreateOrder" }` to expect a non-empty GraphQL `errors` array, or add `status: 503` to expect that HTTP status on a single-operation request.
+
+The exception is per test and binds when the next matching monitored request starts. It does not mock the response, disable monitoring, or change the shared allowlist. If no request matches, the matched request is still in flight at teardown, or it returns anything other than the expected error, the test fails. Other requests still follow normal guard rules. If the scenario intentionally shows a message caught by the UI guard, allow that exact message in the scenario's UI configuration and still assert it.
+
 ### Behavior and limitations
 
 After a `click` on the fixture's page, locators, or mouse, it waits for already-observed monitored API requests to finish, up to `RESPONSE_WAIT_TIMEOUT_MS` in [`network-config.ts`](./src/framework/utils/network-config.ts) (one second by default). A timeout is silent and the test proceeds; a successful response proceeds normally. An unexpected monitored HTTP 4xx/5xx response, GraphQL error, or failed request fails the test, including the HTTP status and response body where available. URLs in failures omit query strings. Requests are not blocked or modified, and Playwright's normal assertions still verify the UI.
