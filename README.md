@@ -198,28 +198,33 @@ test.use({
 
 These options can also be set in a Playwright project's `use` configuration. To type-check them in `playwright.config.ts`, import `GuardOptions` as a type from `src/framework/fixtures/base` and use `defineConfig<GuardOptions>(...)`.
 
-### Mocking an expected API error
+### Allowing an expected API error
 
-Use the `ignoreNetworkErrors` fixture just before the step that triggers the request. Set up the mock separately with Playwright, and keep the assertion for the expected UI behavior:
+Call `ignoreNetworkErrors` immediately before a step that is expected to trigger a backend error. Use it for negative scenarios or for a known, documented error the frontend does not yet handle. If the UI does not show an error message, assert the outcome the scenario actually requires, such as the form staying open.
+
+**REST: submitting a duplicate order returns HTTP 409.**
 
 ```ts
-test("shows retry guidance when the orders API fails", async ({ page, ignoreNetworkErrors }) => {
-  // Configure https://api.example.com/api in restApiEndpoints first.
-  await page.goto("/orders");
-  await page.route("https://api.example.com/api/orders", (route) =>
-    route.fulfill({ status: 503, json: { error: "Orders unavailable" } }),
-    { times: 1 },
-  );
-
-  ignoreNetworkErrors({ restPath: "/api/orders", status: 503 });
-  await page.getByRole("button", { name: "Load orders" }).click();
-  await expect(page.getByText("Try again later")).toBeVisible();
-});
+// Configure the REST endpoint and prepare a duplicate order first.
+ignoreNetworkErrors({ restPath: "/api/orders", status: 409 });
+await page.getByRole("button", { name: "Place order" }).click();
+await expect(page.getByText("This order already exists")).toBeVisible();
 ```
 
-For query-based routes, narrow the match with `query`, for example `{ restPath: "/index.php", query: { rt: "r/product/product/addToCart" }, status: 503 }`. With GraphQL monitoring enabled, use `{ graphqlOperation: "CreateOrder" }` to expect a non-empty GraphQL `errors` array, or add `status: 503` to expect that HTTP status on a single-operation request.
+**GraphQL: invalid order data produces an `errors` array even though HTTP status is 200.**
 
-The exception is per test and binds when the next matching monitored request starts. It does not mock the response, disable monitoring, or change the shared allowlist. If no request matches, the matched request is still in flight at teardown, or it returns anything other than the expected error, the test fails. Other requests still follow normal guard rules. If the scenario intentionally shows a message caught by the UI guard, allow that exact message in the scenario's UI configuration and still assert it.
+```ts
+// Enable monitorGraphql and prepare the invalid order first.
+ignoreNetworkErrors({ graphqlOperation: "CreateOrder" });
+await page.getByRole("button", { name: "Place order" }).click();
+await expect(page.getByRole("form", { name: "Checkout" })).toBeVisible();
+```
+
+Both examples use `ignoreNetworkErrors` from the test callback's fixtures.
+
+For a GraphQL transport error, add `status: 503` to expect that HTTP status on a single-operation request instead. For REST routes that share a path, add `query` to narrow the match, for example `{ restPath: "/api/orders", query: { source: "checkout" }, status: 503 }`.
+
+The exception is per test and binds when the next matching monitored request starts. It does not disable monitoring or change the shared allowlist. If no request matches, the matched request is still in flight at teardown, or it returns anything other than the expected error, the test fails. Other requests still follow normal guard rules. If the scenario intentionally shows a message caught by the UI guard, allow that exact message in the scenario's UI configuration and still assert it.
 
 ### Behavior and limitations
 

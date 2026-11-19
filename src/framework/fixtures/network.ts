@@ -11,7 +11,23 @@ type NetworkGuards = {
 
 type NetworkFixtures = NetworkGuardOptions & {
   networkGuards: NetworkGuards;
-  /** Require and allow one expected error from the next matching monitored request. */
+  /**
+   * Allow one expected error from the next matching monitored request.
+   * Call just before the triggering action in a negative test or a scenario
+   * with a known backend error the UI does not yet handle. The test still
+   * fails if the expected error does not occur.
+   *
+   * @example
+   * // REST: submitting a duplicate order returns HTTP 409.
+   * ignoreNetworkErrors({ restPath: "/api/orders", status: 409 });
+   * await page.getByRole("button", { name: "Place order" }).click();
+   *
+   * @example
+   * // GraphQL: with monitoring enabled, invalid order data causes CreateOrder
+   * // to return HTTP 200 with a non-empty `errors` array.
+   * ignoreNetworkErrors({ graphqlOperation: "CreateOrder" });
+   * await page.getByRole("button", { name: "Place order" }).click();
+   */
   ignoreNetworkErrors: (expected: ExpectedNetworkError) => void;
 };
 
