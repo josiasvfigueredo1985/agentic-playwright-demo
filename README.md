@@ -2,6 +2,8 @@
 
 A **spec-driven Playwright testing approach** where agents explore applications and generate tests with page and component objects as needed.
 
+This is a personal learning and portfolio project, not a commercial offering. I've shared the source so others can read the examples and learn from the approach. It's available for viewing and reference only, not for commercial use. See the [license](./LICENSE) for the full terms.
+
 ## Contents
 
 - [Core Concept](#-core-concept)
